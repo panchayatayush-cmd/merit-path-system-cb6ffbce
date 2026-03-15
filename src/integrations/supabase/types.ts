@@ -14,16 +14,482 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      centers: {
+        Row: {
+          address: string | null
+          center_code: string
+          center_name: string
+          contact_person: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean | null
+          mobile: string | null
+          payment_verified: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          center_code: string
+          center_name: string
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          mobile?: string | null
+          payment_verified?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          center_code?: string
+          center_name?: string
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          mobile?: string | null
+          payment_verified?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      certificates: {
+        Row: {
+          attempt_id: string
+          certificate_id: string
+          class: number | null
+          created_at: string
+          exam_name: string | null
+          father_name: string | null
+          id: string
+          qr_code_data: string | null
+          rank: number | null
+          score: number | null
+          student_id: string
+          student_name: string
+          year: number | null
+        }
+        Insert: {
+          attempt_id: string
+          certificate_id: string
+          class?: number | null
+          created_at?: string
+          exam_name?: string | null
+          father_name?: string | null
+          id?: string
+          qr_code_data?: string | null
+          rank?: number | null
+          score?: number | null
+          student_id: string
+          student_name: string
+          year?: number | null
+        }
+        Update: {
+          attempt_id?: string
+          certificate_id?: string
+          class?: number | null
+          created_at?: string
+          exam_name?: string | null
+          father_name?: string | null
+          id?: string
+          qr_code_data?: string | null
+          rank?: number | null
+          score?: number | null
+          student_id?: string
+          student_name?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "exam_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_answers: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          question_id: string
+          selected_option: number | null
+          time_taken: number | null
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          question_id: string
+          selected_option?: number | null
+          time_taken?: number | null
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          question_id?: string
+          selected_option?: number | null
+          time_taken?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "exam_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_attempts: {
+        Row: {
+          correct_answers: number | null
+          created_at: string
+          end_time: string | null
+          id: string
+          is_completed: boolean | null
+          score: number | null
+          start_time: string
+          student_id: string
+          time_taken: number | null
+          total_questions: number | null
+          wrong_answers: number | null
+        }
+        Insert: {
+          correct_answers?: number | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_completed?: boolean | null
+          score?: number | null
+          start_time?: string
+          student_id: string
+          time_taken?: number | null
+          total_questions?: number | null
+          wrong_answers?: number | null
+        }
+        Update: {
+          correct_answers?: number | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_completed?: boolean | null
+          score?: number | null
+          start_time?: string
+          student_id?: string
+          time_taken?: number | null
+          total_questions?: number | null
+          wrong_answers?: number | null
+        }
+        Relationships: []
+      }
+      payment_orders: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          metadata: Json | null
+          order_type: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          order_type: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          order_type?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          block: string | null
+          center_code: string | null
+          class: number | null
+          created_at: string
+          district: string | null
+          email: string | null
+          father_name: string | null
+          full_name: string | null
+          id: string
+          mobile: string | null
+          photo_url: string | null
+          pin_code: string | null
+          profile_completed: boolean | null
+          school_address: string | null
+          school_mobile: string | null
+          school_name: string | null
+          state: string | null
+          tahsil: string | null
+          updated_at: string
+          user_id: string
+          village: string | null
+        }
+        Insert: {
+          block?: string | null
+          center_code?: string | null
+          class?: number | null
+          created_at?: string
+          district?: string | null
+          email?: string | null
+          father_name?: string | null
+          full_name?: string | null
+          id?: string
+          mobile?: string | null
+          photo_url?: string | null
+          pin_code?: string | null
+          profile_completed?: boolean | null
+          school_address?: string | null
+          school_mobile?: string | null
+          school_name?: string | null
+          state?: string | null
+          tahsil?: string | null
+          updated_at?: string
+          user_id: string
+          village?: string | null
+        }
+        Update: {
+          block?: string | null
+          center_code?: string | null
+          class?: number | null
+          created_at?: string
+          district?: string | null
+          email?: string | null
+          father_name?: string | null
+          full_name?: string | null
+          id?: string
+          mobile?: string | null
+          photo_url?: string | null
+          pin_code?: string | null
+          profile_completed?: boolean | null
+          school_address?: string | null
+          school_mobile?: string | null
+          school_name?: string | null
+          state?: string | null
+          tahsil?: string | null
+          updated_at?: string
+          user_id?: string
+          village?: string | null
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          class_group: string
+          correct_option: number
+          created_at: string
+          id: string
+          is_active: boolean | null
+          options: Json
+          points: number
+          question_text: string
+          time_limit: number
+        }
+        Insert: {
+          class_group: string
+          correct_option: number
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          options: Json
+          points?: number
+          question_text: string
+          time_limit?: number
+        }
+        Update: {
+          class_group?: string
+          correct_option?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          options?: Json
+          points?: number
+          question_text?: string
+          time_limit?: number
+        }
+        Relationships: []
+      }
+      scholarship_fund: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          payment_order_id: string | null
+          source: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          payment_order_id?: string | null
+          source: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_order_id?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scholarship_fund_payment_order_id_fkey"
+            columns: ["payment_order_id"]
+            isOneToOne: false
+            referencedRelation: "payment_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          type: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          type: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          type?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_center_code: { Args: never; Returns: string }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "student" | "center" | "admin" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +616,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["student", "center", "admin", "super_admin"],
+    },
   },
 } as const
