@@ -68,7 +68,7 @@ serve(async (req) => {
     );
 
     // Update payment order
-    const { error: updateError } = await serviceClient
+    const { data: updatedOrder, error: updateError } = await serviceClient
       .from("payment_orders")
       .update({
         status: "verified",
@@ -76,18 +76,29 @@ serve(async (req) => {
         razorpay_signature,
       })
       .eq("id", db_order_id)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .select("amount, order_type")
+      .single();
 
     if (updateError) throw updateError;
 
-    // Get payment order for amount info
-    const { data: order } = await serviceClient
-      .from("payment_orders")
-      .select("amount")
-      .eq("id", db_order_id)
-      .single();
+    const amount = Number(updatedOrder?.amount ?? 0);
+    const orderType = updatedOrder?.order_type;
 
-    const amount = Number(order?.amount ?? 0);
+    // If center registration, activate center
+    if (orderType === "center_registration") {
+      await serviceClient
+        .from("centers")
+        .update({ is_active: true, payment_verified: true })
+        .eq("user_id", user.id);
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Center payment verified and activated" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Exam fee distribution below
 
     // Distribute payment: Student ₹50, Center ₹75, Admin ₹25, Super Admin ₹75, rest → scholarship
     // Get student's center_code to find center user

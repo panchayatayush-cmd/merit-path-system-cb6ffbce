@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { Lock } from 'lucide-react';
 
 const STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -20,7 +22,9 @@ type FieldDef = { label: string; key: string; type?: string; required?: boolean;
 
 export default function CenterProfilePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState<boolean | null>(null);
   const [form, setForm] = useState({
     center_name: '',
     contact_person: '',
@@ -37,28 +41,40 @@ export default function CenterProfilePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('centers')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setForm({
-            center_name: data.center_name ?? '',
-            contact_person: data.contact_person ?? '',
-            mobile: data.mobile ?? '',
-            email: data.email ?? '',
-            address: data.address ?? '',
-            owner_village: (data as any).owner_village ?? '',
-            owner_block: (data as any).owner_block ?? '',
-            owner_tahsil: (data as any).owner_tahsil ?? '',
-            owner_district: (data as any).owner_district ?? '',
-            owner_state: (data as any).owner_state ?? '',
-            owner_pin_code: (data as any).owner_pin_code ?? '',
-          });
-        }
-      });
+    const load = async () => {
+      // Check payment status
+      const { data: paymentData } = await supabase
+        .from('payment_orders')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('order_type', 'center_registration')
+        .eq('status', 'verified')
+        .limit(1)
+        .maybeSingle();
+      setPaymentVerified(paymentData?.status === 'verified');
+
+      const { data } = await supabase
+        .from('centers')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data) {
+        setForm({
+          center_name: data.center_name ?? '',
+          contact_person: data.contact_person ?? '',
+          mobile: data.mobile ?? '',
+          email: data.email ?? '',
+          address: data.address ?? '',
+          owner_village: (data as any).owner_village ?? '',
+          owner_block: (data as any).owner_block ?? '',
+          owner_tahsil: (data as any).owner_tahsil ?? '',
+          owner_district: (data as any).owner_district ?? '',
+          owner_state: (data as any).owner_state ?? '',
+          owner_pin_code: (data as any).owner_pin_code ?? '',
+        });
+      }
+    };
+    load();
   }, [user]);
 
   const handleChange = (key: string, value: string) => {
@@ -130,6 +146,25 @@ export default function CenterProfilePage() {
       )}
     </div>
   );
+
+  if (paymentVerified === false) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-lg mx-auto space-y-6">
+          <div className="card-shadow rounded-lg bg-card p-6 text-center space-y-4">
+            <Lock className="h-10 w-10 text-muted-foreground mx-auto" />
+            <h2 className="text-base font-semibold text-foreground">Profile Locked</h2>
+            <p className="text-sm text-muted-foreground">
+              कृपया पहले ₹500 registration fee pay करें। Payment के बाद आपका Center Code और Profile unlock हो जाएगा।
+            </p>
+            <Button onClick={() => navigate('/center/payment')} className="w-full">
+              Go to Payment
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
