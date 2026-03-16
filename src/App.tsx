@@ -44,6 +44,8 @@ import SuperAdminWalletsPage from "./pages/superadmin/SuperAdminWalletsPage";
 import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsPage";
 // Public pages
 import Index from "./pages/Index";
+import AboutUsPage from "./pages/AboutUsPage";
+import PhotoGalleryPage from "./pages/PhotoGalleryPage";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
 import NotFound from "./pages/NotFound";
 
