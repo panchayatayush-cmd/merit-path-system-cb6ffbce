@@ -209,6 +209,12 @@ export default function StudentProfilePage() {
     { label: 'School Name', key: 'school_name', required: true },
     { label: 'School Mobile', key: 'school_mobile' },
     { label: 'School Address', key: 'school_address' },
+    { label: 'School Village / Town', key: 'school_village' },
+    { label: 'School Block', key: 'school_block' },
+    { label: 'School Tahsil', key: 'school_tahsil' },
+    { label: 'School District', key: 'school_district', required: true },
+    { label: 'School State', key: 'school_state', required: true, options: STATES },
+    { label: 'School PIN Code', key: 'school_pin_code' },
   ];
 
   const centerFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
