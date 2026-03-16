@@ -41,6 +41,7 @@ import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import ManageAdminsPage from "./pages/superadmin/ManageAdminsPage";
 import SuperAdminPaymentsPage from "./pages/superadmin/SuperAdminPaymentsPage";
 import SuperAdminWalletsPage from "./pages/superadmin/SuperAdminWalletsPage";
+import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsPage";
 // Public pages
 import Index from "./pages/Index";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
