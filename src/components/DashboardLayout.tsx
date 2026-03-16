@@ -103,7 +103,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
           <NotificationBell />
         </div>
-        </div>
         <nav className="flex-1 p-2 space-y-0.5">
           {navItems.map((item) => {
             const isActive = location.pathname === item.href;
