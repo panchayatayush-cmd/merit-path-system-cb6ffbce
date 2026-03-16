@@ -16,6 +16,7 @@ import {
   BarChart3,
   Shield,
   ArrowDownToLine,
+  Sparkles,
 } from 'lucide-react';
 
 interface NavItem {
