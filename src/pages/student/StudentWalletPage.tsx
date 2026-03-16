@@ -1,34 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
+import WithdrawalRequestForm from '@/components/WithdrawalRequestForm';
+import WithdrawalHistory from '@/components/WithdrawalHistory';
 
 export default function StudentWalletPage() {
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
+  const [walletId, setWalletId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!user) return;
-    const load = async () => {
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('id, balance')
-        .eq('user_id', user.id)
-        .maybeSingle();
+    const { data: wallet } = await supabase
+      .from('wallets')
+      .select('id, balance')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
-      if (wallet) {
-        setBalance(Number(wallet.balance));
-        const { data: txns } = await supabase
-          .from('wallet_transactions')
-          .select('*')
-          .eq('wallet_id', wallet.id)
-          .order('created_at', { ascending: false });
-        setTransactions(txns ?? []);
-      }
-    };
-    load();
+    if (wallet) {
+      setWalletId(wallet.id);
+      setBalance(Number(wallet.balance));
+      const { data: txns } = await supabase
+        .from('wallet_transactions')
+        .select('*')
+        .eq('wallet_id', wallet.id)
+        .order('created_at', { ascending: false });
+      setTransactions(txns ?? []);
+
+      const { data: wr } = await supabase
+        .from('withdrawal_requests' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      setWithdrawals((wr as any[]) ?? []);
+    }
   }, [user]);
+
+  useEffect(() => { load(); }, [load]);
 
   return (
     <DashboardLayout>
@@ -42,6 +53,21 @@ export default function StudentWalletPage() {
           </p>
         </div>
 
+        {/* Withdrawal Request */}
+        {walletId && balance > 0 && (
+          <div className="card-shadow rounded-lg bg-card p-6">
+            <h2 className="text-sm font-semibold text-foreground mb-4">Request Withdrawal</h2>
+            <WithdrawalRequestForm walletId={walletId} balance={balance} onSuccess={load} />
+          </div>
+        )}
+
+        {/* Withdrawal History */}
+        <div className="card-shadow rounded-lg bg-card p-6">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Withdrawal Requests</h2>
+          <WithdrawalHistory requests={withdrawals} />
+        </div>
+
+        {/* Transaction History */}
         <div className="card-shadow rounded-lg bg-card p-6">
           <h2 className="text-sm font-semibold text-foreground mb-4">Transaction History</h2>
           {transactions.length === 0 ? (

@@ -41,6 +41,7 @@ import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import ManageAdminsPage from "./pages/superadmin/ManageAdminsPage";
 import SuperAdminPaymentsPage from "./pages/superadmin/SuperAdminPaymentsPage";
 import SuperAdminWalletsPage from "./pages/superadmin/SuperAdminWalletsPage";
+import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsPage";
 // Public pages
 import Index from "./pages/Index";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
@@ -94,6 +95,7 @@ const App = () => (
             <Route path="/super-admin/admins" element={<RoleGuard allowedRoles={['super_admin']}><ManageAdminsPage /></RoleGuard>} />
             <Route path="/super-admin/payments" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminPaymentsPage /></RoleGuard>} />
             <Route path="/super-admin/wallets" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminWalletsPage /></RoleGuard>} />
+            <Route path="/super-admin/withdrawals" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminWithdrawalsPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />

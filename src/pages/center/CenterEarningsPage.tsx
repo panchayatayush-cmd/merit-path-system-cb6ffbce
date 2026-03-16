@@ -1,44 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import WithdrawalRequestForm from '@/components/WithdrawalRequestForm';
+import WithdrawalHistory from '@/components/WithdrawalHistory';
 
 export default function CenterEarningsPage() {
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
+  const [walletId, setWalletId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!user) return;
-    const load = async () => {
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('id, balance')
-        .eq('user_id', user.id)
-        .maybeSingle();
+    const { data: wallet } = await supabase
+      .from('wallets')
+      .select('id, balance')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
-      if (wallet) {
-        setBalance(Number(wallet.balance));
-        const { data: txns } = await supabase
-          .from('wallet_transactions')
-          .select('*')
-          .eq('wallet_id', wallet.id)
-          .order('created_at', { ascending: false });
-        setTransactions(txns ?? []);
-      }
-    };
-    load();
+    if (wallet) {
+      setWalletId(wallet.id);
+      setBalance(Number(wallet.balance));
+      const { data: txns } = await supabase
+        .from('wallet_transactions')
+        .select('*')
+        .eq('wallet_id', wallet.id)
+        .order('created_at', { ascending: false });
+      setTransactions(txns ?? []);
+
+      const { data: wr } = await supabase
+        .from('withdrawal_requests' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      setWithdrawals((wr as any[]) ?? []);
+    }
   }, [user]);
 
-  const handleWithdrawal = () => {
-    if (balance <= 0) {
-      toast.error('Insufficient balance');
-      return;
-    }
-    toast.info('Withdrawal request submitted for review.');
-  };
+  useEffect(() => { load(); }, [load]);
 
   return (
     <DashboardLayout>
@@ -50,14 +51,24 @@ export default function CenterEarningsPage() {
           <p className="text-3xl font-bold tabular-nums tracking-tighter text-primary mt-1">
             ₹{balance.toFixed(2)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">₹75 per student</p>
-          {balance > 0 && (
-            <Button onClick={handleWithdrawal} variant="outline" className="mt-4">
-              Request Withdrawal
-            </Button>
-          )}
+          <p className="text-xs text-muted-foreground mt-1">₹30 per student referral</p>
         </div>
 
+        {/* Withdrawal Request */}
+        {walletId && balance > 0 && (
+          <div className="card-shadow rounded-lg bg-card p-6">
+            <h2 className="text-sm font-semibold text-foreground mb-4">Request Withdrawal</h2>
+            <WithdrawalRequestForm walletId={walletId} balance={balance} onSuccess={load} />
+          </div>
+        )}
+
+        {/* Withdrawal History */}
+        <div className="card-shadow rounded-lg bg-card p-6">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Withdrawal Requests</h2>
+          <WithdrawalHistory requests={withdrawals} />
+        </div>
+
+        {/* Transaction History */}
         <div className="card-shadow rounded-lg bg-card p-6">
           <h2 className="text-sm font-semibold text-foreground mb-4">Transactions</h2>
           {transactions.length === 0 ? (
