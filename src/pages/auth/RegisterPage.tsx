@@ -32,19 +32,16 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // Sign up – with auto-confirm this returns a session immediately
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { emailRedirectTo: window.location.origin },
       });
       if (signUpError) throw signUpError;
 
-      // Wait briefly for session to propagate
-      await new Promise((r) => setTimeout(r, 500));
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error('Registration failed – no session');
+      // With auto-confirm, session is returned immediately
+      const session = data.session;
+      if (!session?.user) throw new Error('Registration failed – no session. Please try again.');
       const userId = session.user.id;
 
       // Assign role
