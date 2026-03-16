@@ -53,12 +53,9 @@ export default function StudentWalletPage() {
           </p>
         </div>
 
-        {/* Withdrawal Request */}
-        {walletId && balance > 0 && (
-          <div className="card-shadow rounded-lg bg-card p-6">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Request Withdrawal</h2>
-            <WithdrawalRequestForm walletId={walletId} balance={balance} onSuccess={load} />
-          </div>
+        {/* Withdraw Button */}
+        {walletId && (
+          <WithdrawButton walletId={walletId} balance={balance} onSuccess={load} />
         )}
 
         {/* Withdrawal History */}
