@@ -860,6 +860,44 @@ export type Database = {
         }
         Relationships: []
       }
+      syllabus_pdfs: {
+        Row: {
+          class_id: string
+          extracted_text: string | null
+          file_name: string | null
+          id: string
+          pdf_file_path: string
+          updated_at: string
+          uploaded_at: string
+        }
+        Insert: {
+          class_id: string
+          extracted_text?: string | null
+          file_name?: string | null
+          id?: string
+          pdf_file_path: string
+          updated_at?: string
+          uploaded_at?: string
+        }
+        Update: {
+          class_id?: string
+          extracted_text?: string | null
+          file_name?: string | null
+          id?: string
+          pdf_file_path?: string
+          updated_at?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllabus_pdfs_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       syllabus_subjects: {
         Row: {
           class_id: string
