@@ -40,8 +40,6 @@ export default function CenterStudentsPage() {
                 <tr className="border-b border-border">
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Class</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Mobile</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Profile</th>
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Joined</th>
                 </tr>
               </thead>
