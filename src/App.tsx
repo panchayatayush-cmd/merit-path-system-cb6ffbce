@@ -38,7 +38,7 @@ import AdminResultsPage from "./pages/admin/AdminResultsPage";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
-
+import ManageAdminsPage from "./pages/superadmin/ManageAdminsPage";
 // Public pages
 import Index from "./pages/Index";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
