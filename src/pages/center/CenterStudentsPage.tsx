@@ -46,19 +46,13 @@ export default function CenterStudentsPage() {
               <tbody>
                 {students.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-8 text-muted-foreground">No students yet</td>
+                    <td colSpan={3} className="text-center py-8 text-muted-foreground">No students yet</td>
                   </tr>
                 ) : (
                   students.map((s, i) => (
                     <tr key={i} className="border-b border-border last:border-0">
                       <td className="px-4 py-3 text-foreground">{s.full_name ?? '—'}</td>
                       <td className="px-4 py-3 font-mono">{s.class ?? '—'}</td>
-                      <td className="px-4 py-3 font-mono">{s.mobile ?? '—'}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs font-medium ${s.profile_completed ? 'text-primary' : 'text-warning'}`}>
-                          {s.profile_completed ? 'Complete' : 'Incomplete'}
-                        </span>
-                      </td>
                       <td className="px-4 py-3 text-xs font-mono text-muted-foreground">
                         {new Date(s.created_at).toLocaleDateString()}
                       </td>
