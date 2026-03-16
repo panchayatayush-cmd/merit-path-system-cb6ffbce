@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState<RegisterRole>('student');
   const [centerName, setCenterName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, refreshRole } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
