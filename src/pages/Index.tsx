@@ -126,6 +126,11 @@ export default function Index() {
                   Students Register Now <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
+              <Link to="/auth/register">
+                <Button size="lg" variant="secondary" className="gap-2">
+                  छात्र अभी रजिस्टर करें <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
               <Link to="/verify">
                 <Button variant="outline" size="lg">Verify Certificate</Button>
               </Link>
