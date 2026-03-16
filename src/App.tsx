@@ -23,6 +23,7 @@ import StudentWalletPage from "./pages/student/StudentWalletPage";
 
 // Center pages
 import CenterDashboard from "./pages/center/CenterDashboard";
+import CenterProfilePage from "./pages/center/CenterProfilePage";
 import CenterStudentsPage from "./pages/center/CenterStudentsPage";
 import CenterEarningsPage from "./pages/center/CenterEarningsPage";
 
@@ -72,6 +73,7 @@ const App = () => (
 
             {/* Center */}
             <Route path="/center" element={<RoleGuard allowedRoles={['center']}><CenterDashboard /></RoleGuard>} />
+            <Route path="/center/profile" element={<RoleGuard allowedRoles={['center']}><CenterProfilePage /></RoleGuard>} />
             <Route path="/center/students" element={<RoleGuard allowedRoles={['center']}><CenterStudentsPage /></RoleGuard>} />
             <Route path="/center/earnings" element={<RoleGuard allowedRoles={['center']}><CenterEarningsPage /></RoleGuard>} />
 
