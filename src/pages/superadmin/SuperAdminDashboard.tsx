@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Users, Building2, CreditCard, BarChart3, Wallet } from 'lucide-react';
+import { Users, Building2, CreditCard, BarChart3, Wallet, Trophy } from 'lucide-react';
 
 export default function SuperAdminDashboard() {
   const [stats, setStats] = useState({
@@ -56,15 +56,56 @@ export default function SuperAdminDashboard() {
           ))}
         </div>
 
-        {/* Commission Distribution Info */}
+        {/* Commission Distribution */}
         <div className="card-shadow rounded-lg bg-card p-4">
           <h2 className="text-sm font-semibold text-foreground mb-2">💰 Commission Distribution (₹300 per exam)</h2>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 text-sm">
-            <div className="text-muted-foreground">Referring Student: <span className="font-semibold text-foreground">₹50</span></div>
-            <div className="text-muted-foreground">Center: <span className="font-semibold text-foreground">₹30</span></div>
-            <div className="text-muted-foreground">Admin: <span className="font-semibold text-foreground">₹20</span></div>
-            <div className="text-muted-foreground">Super Admin: <span className="font-semibold text-foreground">₹75</span></div>
-            <div className="text-muted-foreground">Scholarship: <span className="font-semibold text-foreground">₹125</span></div>
+            <div className="text-muted-foreground">Referring Student: <span className="font-semibold text-foreground">₹70</span></div>
+            <div className="text-muted-foreground">Center: <span className="font-semibold text-foreground">₹40</span></div>
+            <div className="text-muted-foreground">Admin: <span className="font-semibold text-foreground">₹30</span></div>
+            <div className="text-muted-foreground">Super Admin: <span className="font-semibold text-primary">₹60</span></div>
+            <div className="text-muted-foreground">Scholarship: <span className="font-semibold text-foreground">₹100</span></div>
+          </div>
+        </div>
+
+        {/* Scholarship Distribution Structure */}
+        <div className="card-shadow rounded-lg bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-primary" /> Scholarship Prize Distribution (₹1,00,000 Pool)
+          </h2>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Rank 1</span>
+              <span className="font-semibold text-foreground">₹10,000</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Rank 2</span>
+              <span className="font-semibold text-foreground">₹7,000</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Rank 3</span>
+              <span className="font-semibold text-foreground">₹5,000</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Rank 4–10 (7 students)</span>
+              <span className="font-semibold text-foreground">₹2,500 each = ₹17,500</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Rank 11–25 (15 students)</span>
+              <span className="font-semibold text-foreground">₹1,500 each = ₹22,500</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Rank 26–50 (25 students)</span>
+              <span className="font-semibold text-foreground">₹820 each = ₹20,500</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-border">
+              <span className="text-muted-foreground">Rank 51–100 (50 students)</span>
+              <span className="font-semibold text-foreground">₹350 each = ₹17,500</span>
+            </div>
+            <div className="flex justify-between py-1 font-bold">
+              <span className="text-foreground">Grand Total</span>
+              <span className="text-primary">₹1,00,000</span>
+            </div>
           </div>
         </div>
       </div>

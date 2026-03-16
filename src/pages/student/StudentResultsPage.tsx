@@ -6,16 +6,30 @@ import DashboardLayout from '@/components/DashboardLayout';
 export default function StudentResultsPage() {
   const { user } = useAuth();
   const [attempt, setAttempt] = useState<any>(null);
+  const [referralBonus, setReferralBonus] = useState(0);
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('exam_attempts')
-      .select('*')
-      .eq('student_id', user.id)
-      .eq('is_completed', true)
-      .maybeSingle()
-      .then(({ data }) => setAttempt(data));
+
+    const load = async () => {
+      const { data } = await supabase
+        .from('exam_attempts')
+        .select('*')
+        .eq('student_id', user.id)
+        .eq('is_completed', true)
+        .maybeSingle();
+      setAttempt(data);
+
+      // Count referrals for bonus
+      const { data: commissions } = await supabase
+        .from('commissions')
+        .select('id')
+        .eq('student_id', user.id)
+        .eq('role', 'referrer');
+      const count = (commissions ?? []).length;
+      setReferralBonus(Math.min(count * 2, 20));
+    };
+    load();
   }, [user]);
 
   if (!attempt) {
@@ -28,6 +42,8 @@ export default function StudentResultsPage() {
     );
   }
 
+  const examScore = Number(attempt.score ?? 0);
+  const finalScore = examScore + referralBonus;
   const percentage = attempt.total_questions > 0
     ? Math.round((attempt.correct_answers / attempt.total_questions) * 100)
     : 0;
@@ -39,11 +55,26 @@ export default function StudentResultsPage() {
 
         <div className="card-shadow rounded-lg bg-card p-6 space-y-4">
           <div className="text-center pb-4 border-b border-border">
-            <p className="text-4xl font-bold tabular-nums tracking-tighter text-primary">{attempt.score}</p>
-            <p className="text-sm text-muted-foreground mt-1">Total Score</p>
+            <p className="text-4xl font-bold tabular-nums tracking-tighter text-primary">{finalScore}</p>
+            <p className="text-sm text-muted-foreground mt-1">Final Score</p>
           </div>
 
           <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-xl font-bold tabular-nums text-foreground">{examScore}</p>
+              <p className="text-xs text-muted-foreground">Exam Score</p>
+            </div>
+            <div>
+              <p className="text-xl font-bold tabular-nums text-primary">+{referralBonus}</p>
+              <p className="text-xs text-muted-foreground">Referral Bonus</p>
+            </div>
+            <div>
+              <p className="text-xl font-bold tabular-nums text-foreground">{percentage}%</p>
+              <p className="text-xs text-muted-foreground">Accuracy</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-center pt-2">
             <div>
               <p className="text-xl font-bold tabular-nums text-primary">{attempt.correct_answers}</p>
               <p className="text-xs text-muted-foreground">Correct</p>
@@ -51,10 +82,6 @@ export default function StudentResultsPage() {
             <div>
               <p className="text-xl font-bold tabular-nums text-foreground">{attempt.wrong_answers}</p>
               <p className="text-xs text-muted-foreground">Wrong</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold tabular-nums text-foreground">{percentage}%</p>
-              <p className="text-xs text-muted-foreground">Accuracy</p>
             </div>
           </div>
 
