@@ -149,21 +149,30 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Examination Fee */}
+      {/* Examination Donation */}
       <section className="border-t border-border bg-secondary/30">
         <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-          <h3 className="text-2xl font-bold text-foreground tracking-tight mb-2">Examination Fee</h3>
-          <p className="text-sm text-muted-foreground mb-8">Affordable fee structure for all students. Accessible intelligence assessment for everyone.</p>
-          <div className="flex justify-center">
-            <div className="card-shadow rounded-xl bg-card border-2 border-primary/30 p-8 text-center max-w-xs">
-              <p className="text-xs font-semibold text-primary uppercase mb-1">All Classes</p>
-              <p className="text-sm text-muted-foreground mb-2">Class 1–12</p>
-              <p className="text-4xl font-bold tabular-nums text-foreground">₹300</p>
-              <Link to="/auth/register" className="block mt-4">
-                <Button size="sm" className="w-full">Register Now</Button>
-              </Link>
-            </div>
+          <h3 className="text-2xl font-bold text-primary tracking-tight mb-2">Examination Donation</h3>
+          <p className="text-sm text-muted-foreground mb-10 max-w-xl mx-auto">
+            Affordable donation structure for all students. Accessible intelligence assessment for everyone.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            {[
+              { label: 'PRIMARY', classes: 'Class 1–5', amount: '₹250', bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800' },
+              { label: 'MIDDLE', classes: 'Class 6–8', amount: '₹300', bg: 'bg-green-50 dark:bg-green-950/30', border: 'border-green-200 dark:border-green-800' },
+              { label: 'SENIOR', classes: 'Class 9–12', amount: '₹350', bg: 'bg-purple-50 dark:bg-purple-950/30', border: 'border-purple-200 dark:border-purple-800' },
+            ].map((tier) => (
+              <div key={tier.label} className={`card-shadow rounded-xl ${tier.bg} border ${tier.border} p-6 text-center`}>
+                <div className="h-10 w-10 mx-auto mb-3 rounded-lg bg-card card-shadow flex items-center justify-center text-primary font-bold text-lg">₹</div>
+                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">{tier.label}</p>
+                <p className="text-sm font-semibold text-foreground mb-2">{tier.classes}</p>
+                <p className="text-3xl font-bold tabular-nums text-foreground">{tier.amount}</p>
+              </div>
+            ))}
           </div>
+          <Link to="/auth/register" className="inline-block mt-8">
+            <Button size="lg" className="gap-2">Register Now <ChevronRight className="h-4 w-4" /></Button>
+          </Link>
         </div>
       </section>
 

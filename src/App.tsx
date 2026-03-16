@@ -101,6 +101,7 @@ const App = () => (
             <Route path="/super-admin/payments" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminPaymentsPage /></RoleGuard>} />
             <Route path="/super-admin/wallets" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminWalletsPage /></RoleGuard>} />
             <Route path="/super-admin/withdrawals" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminWithdrawalsPage /></RoleGuard>} />
+            <Route path="/super-admin/gallery" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminGalleryPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />
