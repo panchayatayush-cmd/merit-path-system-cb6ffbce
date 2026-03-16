@@ -17,6 +17,7 @@ import {
   Shield,
   ArrowDownToLine,
   Sparkles,
+  Calendar,
 } from 'lucide-react';
 
 interface NavItem {
