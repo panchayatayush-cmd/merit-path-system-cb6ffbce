@@ -7,15 +7,8 @@ import {
 } from 'lucide-react';
 import gphdmLogo from '@/assets/gphdm-logo.jpg';
 
-const scholarshipTiers = [
-  { rank: 'Rank 1', prize: '₹10,000', category: 'TOP RANK', highlight: true },
-  { rank: 'Rank 2', prize: '₹7,000', category: 'TOP RANK', highlight: true },
-  { rank: 'Rank 3', prize: '₹5,000', category: 'TOP RANK', highlight: true },
-  { rank: 'Rank 4–10', prize: '₹2,500/student', category: 'ELITE RANK', students: 7, total: '₹17,500' },
-  { rank: 'Rank 11–25', prize: '₹1,500/student', category: 'ADVANCED RANK', students: 15, total: '₹22,500' },
-  { rank: 'Rank 26–50', prize: '₹820/student', category: 'MERIT RANK', students: 25, total: '₹20,500' },
-  { rank: 'Rank 51–100', prize: '₹350/student', category: 'PARTICIPATION', students: 50, total: '₹17,500' },
-];
+
+
 
 const features = [
   { icon: <BookOpen className="h-5 w-5" />, title: 'Class 1–12 Coverage', desc: 'Comprehensive examination for all school levels with age-appropriate questions.' },
