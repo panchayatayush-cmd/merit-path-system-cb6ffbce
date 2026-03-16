@@ -22,7 +22,9 @@ type FieldDef = { label: string; key: string; type?: string; required?: boolean;
 
 export default function CenterProfilePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState<boolean | null>(null);
   const [form, setForm] = useState({
     center_name: '',
     contact_person: '',
