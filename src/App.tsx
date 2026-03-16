@@ -43,6 +43,8 @@ import SuperAdminPaymentsPage from "./pages/superadmin/SuperAdminPaymentsPage";
 import SuperAdminWalletsPage from "./pages/superadmin/SuperAdminWalletsPage";
 import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsPage";
 import SuperAdminGalleryPage from "./pages/superadmin/SuperAdminGalleryPage";
+import SuperAdminSyllabusPage from "./pages/superadmin/SuperAdminSyllabusPage";
+import SuperAdminAIExamPage from "./pages/superadmin/SuperAdminAIExamPage";
 // Public pages
 import Index from "./pages/Index";
 import AboutUsPage from "./pages/AboutUsPage";
