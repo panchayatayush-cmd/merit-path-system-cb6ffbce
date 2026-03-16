@@ -44,6 +44,8 @@ import SuperAdminWalletsPage from "./pages/superadmin/SuperAdminWalletsPage";
 import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsPage";
 // Public pages
 import Index from "./pages/Index";
+import AboutUsPage from "./pages/AboutUsPage";
+import PhotoGalleryPage from "./pages/PhotoGalleryPage";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +61,8 @@ const App = () => (
           <Routes>
             {/* Public */}
             <Route path="/" element={<Index />} />
+            <Route path="/about" element={<AboutUsPage />} />
+            <Route path="/gallery" element={<PhotoGalleryPage />} />
             <Route path="/auth/login" element={<LoginPage />} />
             <Route path="/auth/register" element={<RegisterPage />} />
             <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
