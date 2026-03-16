@@ -211,7 +211,7 @@ export default function SuperAdminAIExamPage() {
                         <TableCell>
                           <div className="flex gap-1">
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleApproval(q)}>
-                              {q.is_approved ? <X className="h-3 w-3" /> : <Check className="h-3 w-3 text-green-600" />}
+                              {q.is_approved ? <X className="h-3 w-3" /> : <Check className="h-3 w-3 text-primary" />}
                             </Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteQuestion(q.id)}>
                               <X className="h-3 w-3 text-destructive" />
