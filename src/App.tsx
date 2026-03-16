@@ -45,6 +45,7 @@ import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsP
 import SuperAdminGalleryPage from "./pages/superadmin/SuperAdminGalleryPage";
 import SuperAdminSyllabusPage from "./pages/superadmin/SuperAdminSyllabusPage";
 import SuperAdminAIExamPage from "./pages/superadmin/SuperAdminAIExamPage";
+import SuperAdminExamSchedulerPage from "./pages/superadmin/SuperAdminExamSchedulerPage";
 // Public pages
 import Index from "./pages/Index";
 import AboutUsPage from "./pages/AboutUsPage";
@@ -106,6 +107,7 @@ const App = () => (
             <Route path="/super-admin/gallery" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminGalleryPage /></RoleGuard>} />
             <Route path="/super-admin/syllabus" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminSyllabusPage /></RoleGuard>} />
             <Route path="/super-admin/ai-exam" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminAIExamPage /></RoleGuard>} />
+            <Route path="/super-admin/exam-scheduler" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminExamSchedulerPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />
