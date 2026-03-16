@@ -15,81 +15,34 @@ export default function CenterDashboard() {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data: centerData } = await supabase
-        .from('centers')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const { data: centerData } = await supabase.from('centers').select('*').eq('user_id', user.id).maybeSingle();
       setCenter(centerData);
 
       if (centerData?.center_code) {
-        const { count } = await supabase
-          .from('profiles')
-          .select('id', { count: 'exact', head: true })
-          .eq('center_code', centerData.center_code);
+        const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('center_code', centerData.center_code);
         setStudentCount(count ?? 0);
       }
 
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('id, balance')
-        .eq('user_id', user.id)
-        .eq('role', 'center')
-        .maybeSingle();
+      const { data: wallet } = await supabase.from('wallets').select('id, balance').eq('user_id', user.id).eq('role', 'center').maybeSingle();
       setWalletBalance(Number(wallet?.balance ?? 0));
 
-      // Calculate referral income from wallet transactions
       if (wallet?.id) {
-        const { data: transactions } = await supabase
-          .from('wallet_transactions')
-          .select('amount')
-          .eq('wallet_id', wallet.id)
-          .eq('type', 'credit');
-        const totalIncome = (transactions ?? []).reduce((sum, t) => sum + Number(t.amount), 0);
-        setReferralIncome(totalIncome);
+        const { data: transactions } = await supabase.from('wallet_transactions').select('amount').eq('wallet_id', wallet.id).eq('type', 'credit');
+        setReferralIncome((transactions ?? []).reduce((sum, t) => sum + Number(t.amount), 0));
 
-        // Pending withdrawals
-        const { data: withdrawals } = await supabase
-          .from('wallet_transactions')
-          .select('amount')
-          .eq('wallet_id', wallet.id)
-          .eq('type', 'withdrawal_pending');
-        const totalPending = (withdrawals ?? []).reduce((sum, t) => sum + Number(t.amount), 0);
-        setPendingWithdrawals(totalPending);
+        const { data: withdrawals } = await supabase.from('wallet_transactions').select('amount').eq('wallet_id', wallet.id).eq('type', 'withdrawal_pending');
+        setPendingWithdrawals((withdrawals ?? []).reduce((sum, t) => sum + Number(t.amount), 0));
       }
     };
     load();
   }, [user]);
 
   const cards = [
-    {
-      label: 'Center Code',
-      value: center?.center_code ?? '—',
-      icon: <Building2 className="h-4 w-4" />,
-      mono: true,
-    },
-    {
-      label: 'Total Students Joined',
-      value: studentCount.toString(),
-      icon: <Users className="h-4 w-4" />,
-    },
-    {
-      label: 'Referral Income',
-      value: `₹${referralIncome.toFixed(2)}`,
-      icon: <TrendingUp className="h-4 w-4" />,
-      highlight: true,
-    },
-    {
-      label: 'Wallet Balance',
-      value: `₹${walletBalance.toFixed(2)}`,
-      icon: <Wallet className="h-4 w-4" />,
-      highlight: true,
-    },
-    {
-      label: 'Pending Withdrawals',
-      value: `₹${pendingWithdrawals.toFixed(2)}`,
-      icon: <Clock className="h-4 w-4" />,
-    },
+    { label: 'Center Code', value: center?.center_code ?? '—', icon: <Building2 className="h-4 w-4" />, mono: true },
+    { label: 'Total Students', value: studentCount.toString(), icon: <Users className="h-4 w-4" /> },
+    { label: 'Referral Income', value: `₹${referralIncome.toFixed(2)}`, icon: <TrendingUp className="h-4 w-4" />, highlight: true },
+    { label: 'Wallet Balance', value: `₹${walletBalance.toFixed(2)}`, icon: <Wallet className="h-4 w-4" />, highlight: true },
+    { label: 'Pending Withdrawals', value: `₹${pendingWithdrawals.toFixed(2)}`, icon: <Clock className="h-4 w-4" /> },
   ];
 
   return (
@@ -118,22 +71,27 @@ export default function CenterDashboard() {
         <div className="card-shadow rounded-lg bg-card p-6">
           <h3 className="text-sm font-medium text-foreground mb-2">📋 Referral System</h3>
           <p className="text-sm text-muted-foreground">
-            जब कोई student आपके Center Code (<span className="font-mono font-medium text-foreground">{center?.center_code ?? '...'}</span>) से register करके exam fee pay करता है, तो आपको <span className="font-medium text-primary">₹30</span> referral income मिलता है।
+            जब कोई student आपके Center Code (<span className="font-mono font-medium text-foreground">{center?.center_code ?? '...'}</span>) से register करके exam fee pay करता है, तो आपको <span className="font-medium text-primary">₹40</span> referral income मिलता है।
           </p>
+        </div>
+
+        {/* Commission Distribution */}
+        <div className="card-shadow rounded-lg bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-2">💰 Commission Distribution (₹300 per exam)</h2>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="text-muted-foreground">Referring Student: <span className="font-semibold text-foreground">₹70</span></div>
+            <div className="text-muted-foreground">Center: <span className="font-semibold text-primary">₹40</span></div>
+            <div className="text-muted-foreground">Admin: <span className="font-semibold text-foreground">₹30</span></div>
+            <div className="text-muted-foreground">Super Admin: <span className="font-semibold text-foreground">₹60</span></div>
+            <div className="text-muted-foreground col-span-2">Scholarship Fund: <span className="font-semibold text-foreground">₹100</span></div>
+          </div>
         </div>
 
         {!center?.payment_verified && (
           <div className="card-shadow rounded-lg bg-card p-6 border-l-4 border-destructive">
             <p className="text-sm text-foreground font-medium">⚠️ Payment Required</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              ₹500 registration fee pay करें। बिना payment के Center Code और Profile unlock नहीं होगा।
-            </p>
-            <button
-              onClick={() => window.location.href = '/center/payment'}
-              className="mt-3 text-sm font-medium text-primary hover:underline"
-            >
-              Pay Now →
-            </button>
+            <p className="text-sm text-muted-foreground mt-1">₹500 registration fee pay करें।</p>
+            <button onClick={() => window.location.href = '/center/payment'} className="mt-3 text-sm font-medium text-primary hover:underline">Pay Now →</button>
           </div>
         )}
       </div>

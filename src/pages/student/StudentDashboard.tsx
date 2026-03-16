@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
-import { BookOpen, CreditCard, Award, Wallet, Users, Copy } from 'lucide-react';
+import { BookOpen, CreditCard, Award, Wallet, Users, Copy, Trophy, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProfileData {
@@ -23,6 +23,9 @@ export default function StudentDashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
   const [referralEarnings, setReferralEarnings] = useState(0);
   const [referredCount, setReferredCount] = useState(0);
+  const [examScore, setExamScore] = useState(0);
+  const [finalScore, setFinalScore] = useState(0);
+  const [referralBonus, setReferralBonus] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -46,11 +49,13 @@ export default function StudentDashboard() {
 
       const { data: attemptData } = await supabase
         .from('exam_attempts')
-        .select('is_completed')
+        .select('is_completed, score')
         .eq('student_id', user.id)
         .eq('is_completed', true)
         .maybeSingle();
       setExamCompleted(!!attemptData);
+      const score = Number(attemptData?.score ?? 0);
+      setExamScore(score);
 
       const { data: walletData } = await supabase
         .from('wallets')
@@ -66,9 +71,15 @@ export default function StudentDashboard() {
         .eq('student_id', user.id)
         .eq('role', 'referrer');
       
+      const count = (commissions ?? []).length;
       const earnings = (commissions ?? []).reduce((sum, c) => sum + Number(c.commission_amount), 0);
       setReferralEarnings(earnings);
-      setReferredCount((commissions ?? []).length);
+      setReferredCount(count);
+
+      // Calculate referral bonus: 1 referral = +2 marks, max 20
+      const bonus = Math.min(count * 2, 20);
+      setReferralBonus(bonus);
+      setFinalScore(score + bonus);
     };
     load();
   }, [user]);
@@ -105,44 +116,36 @@ export default function StudentDashboard() {
         </div>
 
         {/* Status cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatusCard
-            icon={<BookOpen className="h-4 w-4" />}
-            label="Exam Status"
-            value={examCompleted ? 'Completed' : examPaid ? 'Ready' : 'Locked'}
-            variant={examCompleted ? 'success' : examPaid ? 'info' : 'muted'}
-          />
-          <StatusCard
-            icon={<CreditCard className="h-4 w-4" />}
-            label="Payment"
-            value={examPaid ? 'Verified' : 'Pending'}
-            variant={examPaid ? 'success' : 'warning'}
-          />
-          <StatusCard
-            icon={<Award className="h-4 w-4" />}
-            label="Certificate"
-            value={examCompleted ? 'Available' : 'Locked'}
-            variant={examCompleted ? 'success' : 'muted'}
-          />
-          <StatusCard
-            icon={<Wallet className="h-4 w-4" />}
-            label="Wallet"
-            value={`₹${walletBalance.toFixed(2)}`}
-            variant="default"
-          />
-          <StatusCard
-            icon={<Users className="h-4 w-4" />}
-            label="Referral Earnings"
-            value={`₹${referralEarnings.toFixed(2)}`}
-            variant="success"
-          />
-          <StatusCard
-            icon={<Users className="h-4 w-4" />}
-            label="Referred Students"
-            value={referredCount.toString()}
-            variant="default"
-          />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatusCard icon={<BookOpen className="h-4 w-4" />} label="Exam Status" value={examCompleted ? 'Completed' : examPaid ? 'Ready' : 'Locked'} variant={examCompleted ? 'success' : examPaid ? 'info' : 'muted'} />
+          <StatusCard icon={<CreditCard className="h-4 w-4" />} label="Payment" value={examPaid ? 'Verified' : 'Pending'} variant={examPaid ? 'success' : 'warning'} />
+          <StatusCard icon={<Wallet className="h-4 w-4" />} label="Wallet" value={`₹${walletBalance.toFixed(2)}`} variant="default" />
+          <StatusCard icon={<Users className="h-4 w-4" />} label="Referral Earnings" value={`₹${referralEarnings.toFixed(2)}`} variant="success" />
         </div>
+
+        {/* Score & Ranking Card */}
+        {examCompleted && (
+          <div className="card-shadow rounded-lg bg-card p-4">
+            <h2 className="text-sm font-semibold text-foreground mb-3">🏆 Score & Ranking</h2>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-xl font-bold tabular-nums text-foreground">{examScore}</p>
+                <p className="text-xs text-muted-foreground">Exam Score</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold tabular-nums text-primary">+{referralBonus}</p>
+                <p className="text-xs text-muted-foreground">Referral Bonus</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold tabular-nums text-primary">{finalScore}</p>
+                <p className="text-xs text-muted-foreground">Final Score</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              {referredCount} referrals × 2 marks = {referralBonus} bonus (max 20)
+            </p>
+          </div>
+        )}
 
         {/* Referral Code Card */}
         {profile?.referral_code && (
@@ -150,47 +153,48 @@ export default function StudentDashboard() {
             <h2 className="text-sm font-semibold text-foreground mb-2">🔗 Your Referral Code</h2>
             <div className="flex items-center gap-3">
               <span className="font-mono text-lg font-bold text-primary">{profile.referral_code}</span>
-              <button
-                onClick={copyReferralCode}
-                className="p-1.5 rounded-md hover:bg-secondary transition-colors"
-              >
+              <button onClick={copyReferralCode} className="p-1.5 rounded-md hover:bg-secondary transition-colors">
                 <Copy className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Share this code with friends. You earn ₹50 when they register and pay the exam fee!
+              Share this code. You earn <span className="font-semibold text-primary">₹70</span> + <span className="font-semibold text-primary">2 bonus marks</span> per referral!
             </p>
           </div>
         )}
+
+        {/* Referral Stats */}
+        <div className="grid grid-cols-2 gap-4">
+          <StatusCard icon={<Users className="h-4 w-4" />} label="Referred Students" value={referredCount.toString()} variant="default" />
+          <StatusCard icon={<TrendingUp className="h-4 w-4" />} label="Bonus Marks" value={`+${referralBonus}`} variant="success" />
+        </div>
 
         {/* Steps */}
         <div className="card-shadow rounded-lg bg-card p-6">
           <h2 className="text-sm font-semibold text-foreground mb-4">Your Journey</h2>
           <div className="space-y-3">
             {steps.map((step, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 cursor-pointer group"
-                onClick={step.action}
-              >
-                <div
-                  className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-mono ${
-                    step.done
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground'
-                  }`}
-                >
+              <div key={i} className="flex items-center gap-3 cursor-pointer group" onClick={step.action}>
+                <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-mono ${step.done ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
                   {step.done ? '✓' : i + 1}
                 </div>
-                <span
-                  className={`text-sm ${
-                    step.done ? 'text-muted-foreground line-through' : 'text-foreground group-hover:text-accent'
-                  }`}
-                >
+                <span className={`text-sm ${step.done ? 'text-muted-foreground line-through' : 'text-foreground group-hover:text-primary'}`}>
                   {step.label}
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Commission Info */}
+        <div className="card-shadow rounded-lg bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-2">💰 Commission Distribution (₹300 per exam)</h2>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="text-muted-foreground">Referring Student: <span className="font-semibold text-foreground">₹70</span></div>
+            <div className="text-muted-foreground">Center: <span className="font-semibold text-foreground">₹40</span></div>
+            <div className="text-muted-foreground">Admin: <span className="font-semibold text-foreground">₹30</span></div>
+            <div className="text-muted-foreground">Super Admin: <span className="font-semibold text-foreground">₹60</span></div>
+            <div className="text-muted-foreground col-span-2">Scholarship Fund: <span className="font-semibold text-primary">₹100</span></div>
           </div>
         </div>
       </div>
@@ -198,17 +202,7 @@ export default function StudentDashboard() {
   );
 }
 
-function StatusCard({
-  icon,
-  label,
-  value,
-  variant,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  variant: 'success' | 'warning' | 'info' | 'muted' | 'default';
-}) {
+function StatusCard({ icon, label, value, variant }: { icon: ReactNode; label: string; value: string; variant: 'success' | 'warning' | 'info' | 'muted' | 'default' }) {
   const colors: Record<string, string> = {
     success: 'text-primary',
     warning: 'text-warning',

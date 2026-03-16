@@ -29,6 +29,15 @@ async function verifySignature(
   return expectedSignature === signature;
 }
 
+// Commission amounts (₹300 total)
+const COMMISSION = {
+  REFERRER: 70,
+  CENTER: 40,
+  ADMIN: 30,
+  SUPER_ADMIN: 60,
+  SCHOLARSHIP: 100,
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -52,7 +61,6 @@ serve(async (req) => {
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, db_order_id } = await req.json();
 
-    // Verify signature
     const isValid = await verifySignature(
       razorpay_order_id,
       razorpay_payment_id,
@@ -67,7 +75,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Prevent duplicate payouts - check if already verified
+    // Prevent duplicate payouts
     const { data: existingOrder } = await serviceClient
       .from("payment_orders")
       .select("status")
@@ -112,16 +120,15 @@ serve(async (req) => {
     }
 
     // ===== EXAM FEE DISTRIBUTION (₹300 total) =====
-    // Student (referring): ₹50, Center: ₹30, Admin: ₹20, Super Admin: ₹75, Scholarship: ₹125
+    // Referring Student: ₹70, Center: ₹40, Admin: ₹30, Super Admin: ₹60, Scholarship: ₹100
 
-    // Get student's profile for center_code and referred_by
     const { data: profile } = await serviceClient
       .from("profiles")
       .select("center_code, referred_by, referral_code")
       .eq("user_id", user.id)
       .single();
 
-    // 1. Credit REFERRING student ₹50 (if referred_by exists)
+    // 1. Credit REFERRING student ₹70
     if (profile?.referred_by) {
       const { data: referrerProfile } = await serviceClient
         .from("profiles")
@@ -130,40 +137,21 @@ serve(async (req) => {
         .single();
 
       if (referrerProfile) {
-        const { data: referrerWallet } = await serviceClient
-          .from("wallets")
-          .select("id, balance")
-          .eq("user_id", referrerProfile.user_id)
-          .eq("role", "student")
-          .single();
+        await creditWallet(serviceClient, referrerProfile.user_id, "student", COMMISSION.REFERRER, "Referral commission - student referred");
 
-        if (referrerWallet) {
-          await serviceClient.from("wallet_transactions").insert({
-            wallet_id: referrerWallet.id,
-            amount: 50,
-            type: "credit",
-            description: "Referral commission - student referred",
-          });
-          await serviceClient
-            .from("wallets")
-            .update({ balance: Number(referrerWallet.balance) + 50 })
-            .eq("id", referrerWallet.id);
-        }
-
-        // Log commission
         await serviceClient.from("commissions").insert({
           student_id: referrerProfile.user_id,
           referral_code: profile.referred_by,
           center_code: profile.center_code,
           payment_id: db_order_id,
           role: "referrer",
-          commission_amount: 50,
+          commission_amount: COMMISSION.REFERRER,
           description: "Referral commission from student exam fee",
         });
       }
     }
 
-    // 2. Credit CENTER owner ₹30
+    // 2. Credit CENTER owner ₹40
     if (profile?.center_code) {
       const { data: center } = await serviceClient
         .from("centers")
@@ -172,67 +160,30 @@ serve(async (req) => {
         .single();
 
       if (center) {
-        const { data: centerWallet } = await serviceClient
-          .from("wallets")
-          .select("id, balance")
-          .eq("user_id", center.user_id)
-          .eq("role", "center")
-          .single();
+        await creditWallet(serviceClient, center.user_id, "center", COMMISSION.CENTER, "Student exam fee commission");
 
-        if (centerWallet) {
-          await serviceClient.from("wallet_transactions").insert({
-            wallet_id: centerWallet.id,
-            amount: 30,
-            type: "credit",
-            description: "Student exam fee commission",
-          });
-          await serviceClient
-            .from("wallets")
-            .update({ balance: Number(centerWallet.balance) + 30 })
-            .eq("id", centerWallet.id);
-        }
-
-        // Log commission
         await serviceClient.from("commissions").insert({
           student_id: user.id,
           referral_code: profile.referred_by ?? null,
           center_code: profile.center_code,
           payment_id: db_order_id,
           role: "center",
-          commission_amount: 30,
+          commission_amount: COMMISSION.CENTER,
           description: "Center commission from student exam fee",
         });
       }
     }
 
-    // 3. Credit ADMIN wallets ₹20 (split among all admins)
+    // 3. Credit ADMIN wallets ₹30 (split among all admins)
     const { data: adminRoles } = await serviceClient
       .from("user_roles")
       .select("user_id")
       .eq("role", "admin");
 
     if (adminRoles && adminRoles.length > 0) {
-      const perAdmin = 20 / adminRoles.length;
+      const perAdmin = COMMISSION.ADMIN / adminRoles.length;
       for (const admin of adminRoles) {
-        const { data: adminWallet } = await serviceClient
-          .from("wallets")
-          .select("id, balance")
-          .eq("user_id", admin.user_id)
-          .eq("role", "admin")
-          .single();
-
-        if (adminWallet) {
-          await serviceClient.from("wallet_transactions").insert({
-            wallet_id: adminWallet.id,
-            amount: perAdmin,
-            type: "credit",
-            description: "Admin commission from exam fee",
-          });
-          await serviceClient
-            .from("wallets")
-            .update({ balance: Number(adminWallet.balance) + perAdmin })
-            .eq("id", adminWallet.id);
-        }
+        await creditWallet(serviceClient, admin.user_id, "admin", perAdmin, "Admin commission from exam fee");
 
         await serviceClient.from("commissions").insert({
           student_id: user.id,
@@ -245,34 +196,16 @@ serve(async (req) => {
       }
     }
 
-    // 4. Credit SUPER ADMIN ₹75
+    // 4. Credit SUPER ADMIN ₹60
     const { data: superAdminRoles } = await serviceClient
       .from("user_roles")
       .select("user_id")
       .eq("role", "super_admin");
 
     if (superAdminRoles && superAdminRoles.length > 0) {
-      const perSuperAdmin = 75 / superAdminRoles.length;
+      const perSuperAdmin = COMMISSION.SUPER_ADMIN / superAdminRoles.length;
       for (const sa of superAdminRoles) {
-        const { data: saWallet } = await serviceClient
-          .from("wallets")
-          .select("id, balance")
-          .eq("user_id", sa.user_id)
-          .eq("role", "super_admin")
-          .single();
-
-        if (saWallet) {
-          await serviceClient.from("wallet_transactions").insert({
-            wallet_id: saWallet.id,
-            amount: perSuperAdmin,
-            type: "credit",
-            description: "Super Admin commission from exam fee",
-          });
-          await serviceClient
-            .from("wallets")
-            .update({ balance: Number(saWallet.balance) + perSuperAdmin })
-            .eq("id", saWallet.id);
-        }
+        await creditWallet(serviceClient, sa.user_id, "super_admin", perSuperAdmin, "Super Admin commission from exam fee");
 
         await serviceClient.from("commissions").insert({
           student_id: user.id,
@@ -285,9 +218,9 @@ serve(async (req) => {
       }
     }
 
-    // 5. Scholarship fund ₹125
+    // 5. Scholarship fund ₹100
     await serviceClient.from("scholarship_fund").insert({
-      amount: 125,
+      amount: COMMISSION.SCHOLARSHIP,
       source: "exam_fee",
       payment_order_id: db_order_id,
     });
@@ -315,3 +248,32 @@ serve(async (req) => {
     });
   }
 });
+
+// Helper to credit wallet
+async function creditWallet(
+  client: any,
+  userId: string,
+  role: string,
+  amount: number,
+  description: string
+) {
+  const { data: wallet } = await client
+    .from("wallets")
+    .select("id, balance")
+    .eq("user_id", userId)
+    .eq("role", role)
+    .single();
+
+  if (wallet) {
+    await client.from("wallet_transactions").insert({
+      wallet_id: wallet.id,
+      amount,
+      type: "credit",
+      description,
+    });
+    await client
+      .from("wallets")
+      .update({ balance: Number(wallet.balance) + amount })
+      .eq("id", wallet.id);
+  }
+}
