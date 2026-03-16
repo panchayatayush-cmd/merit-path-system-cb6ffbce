@@ -25,6 +25,12 @@ export type Database = {
           id: string
           is_active: boolean | null
           mobile: string | null
+          owner_block: string | null
+          owner_district: string | null
+          owner_pin_code: string | null
+          owner_state: string | null
+          owner_tahsil: string | null
+          owner_village: string | null
           payment_verified: boolean | null
           updated_at: string
           user_id: string
@@ -39,6 +45,12 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           mobile?: string | null
+          owner_block?: string | null
+          owner_district?: string | null
+          owner_pin_code?: string | null
+          owner_state?: string | null
+          owner_tahsil?: string | null
+          owner_village?: string | null
           payment_verified?: boolean | null
           updated_at?: string
           user_id: string
@@ -53,6 +65,12 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           mobile?: string | null
+          owner_block?: string | null
+          owner_district?: string | null
+          owner_pin_code?: string | null
+          owner_state?: string | null
+          owner_tahsil?: string | null
+          owner_village?: string | null
           payment_verified?: boolean | null
           updated_at?: string
           user_id?: string
@@ -260,8 +278,14 @@ export type Database = {
           pin_code: string | null
           profile_completed: boolean | null
           school_address: string | null
+          school_block: string | null
+          school_district: string | null
           school_mobile: string | null
           school_name: string | null
+          school_pin_code: string | null
+          school_state: string | null
+          school_tahsil: string | null
+          school_village: string | null
           state: string | null
           tahsil: string | null
           updated_at: string
@@ -283,8 +307,14 @@ export type Database = {
           pin_code?: string | null
           profile_completed?: boolean | null
           school_address?: string | null
+          school_block?: string | null
+          school_district?: string | null
           school_mobile?: string | null
           school_name?: string | null
+          school_pin_code?: string | null
+          school_state?: string | null
+          school_tahsil?: string | null
+          school_village?: string | null
           state?: string | null
           tahsil?: string | null
           updated_at?: string
@@ -306,8 +336,14 @@ export type Database = {
           pin_code?: string | null
           profile_completed?: boolean | null
           school_address?: string | null
+          school_block?: string | null
+          school_district?: string | null
           school_mobile?: string | null
           school_name?: string | null
+          school_pin_code?: string | null
+          school_state?: string | null
+          school_tahsil?: string | null
+          school_village?: string | null
           state?: string | null
           tahsil?: string | null
           updated_at?: string
