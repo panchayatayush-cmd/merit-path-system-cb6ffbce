@@ -284,8 +284,45 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Scholarship Distribution */}
+      {/* Scholarship Rewards By Category */}
       <section className="border-t border-border bg-secondary/30">
+        <div className="max-w-6xl mx-auto px-4 py-16 text-center">
+          <h3 className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight mb-2">Scholarship Rewards By Category</h3>
+          <p className="text-sm text-muted-foreground mb-10 max-w-xl mx-auto">
+            Attractive scholarship amounts across all educational categories.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[
+              { label: 'CLASS 1–5', title: 'Primary', range: '₹2,000 – ₹10,000', positions: '100+ Ranks', color: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800', btnClass: 'bg-accent text-accent-foreground hover:bg-accent/90' },
+              { label: 'CLASS 6–8', title: 'Junior', range: '₹2,500 – ₹12,000', positions: '100+ Ranks', color: 'bg-green-50 dark:bg-green-950/30', border: 'border-green-200 dark:border-green-800', btnClass: 'bg-primary text-primary-foreground hover:bg-primary/90' },
+              { label: 'CLASS 9–12', title: 'Senior', range: '₹3,000 – ₹15,000', positions: '100+ Ranks', color: 'bg-purple-50 dark:bg-purple-950/30', border: 'border-purple-200 dark:border-purple-800', btnClass: 'bg-purple-500 text-white hover:bg-purple-600' },
+            ].map((cat) => (
+              <div key={cat.label} className={`card-shadow rounded-xl ${cat.color} border ${cat.border} p-6 text-left`}>
+                <span className="inline-block text-[10px] font-bold tracking-wider uppercase px-3 py-1 rounded-full bg-card card-shadow text-foreground mb-3">{cat.label}</span>
+                <h4 className="text-xl font-bold text-foreground mb-4">{cat.title}</h4>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">Scholarship Range:</p>
+                    <p className="text-sm font-bold tabular-nums text-foreground">{cat.range}</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">Eligible Positions:</p>
+                    <p className="text-sm font-bold tabular-nums text-foreground">{cat.positions}</p>
+                  </div>
+                </div>
+                <Link to="/auth/register">
+                  <button className={`w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${cat.btnClass}`}>
+                    Enrol Now <ChevronRight className="h-4 w-4" />
+                  </button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Scholarship Prize Distribution */}
+      <section className="border-t border-border">
         <div className="max-w-6xl mx-auto px-4 py-16">
           <div className="flex items-center gap-2 mb-2">
             <Trophy className="h-5 w-5 text-primary" />
