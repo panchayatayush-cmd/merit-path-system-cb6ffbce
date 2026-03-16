@@ -118,7 +118,7 @@ export default function CenterDashboard() {
         <div className="card-shadow rounded-lg bg-card p-6">
           <h3 className="text-sm font-medium text-foreground mb-2">📋 Referral System</h3>
           <p className="text-sm text-muted-foreground">
-            जब कोई student आपके Center Code (<span className="font-mono font-medium text-foreground">{center?.center_code ?? '...'}</span>) से register करके exam fee pay करता है, तो आपको <span className="font-medium text-primary">₹75</span> referral income मिलता है।
+            जब कोई student आपके Center Code (<span className="font-mono font-medium text-foreground">{center?.center_code ?? '...'}</span>) से register करके exam fee pay करता है, तो आपको <span className="font-medium text-primary">₹30</span> referral income मिलता है।
           </p>
         </div>
 
