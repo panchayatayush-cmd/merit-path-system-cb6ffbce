@@ -38,7 +38,7 @@ import AdminResultsPage from "./pages/admin/AdminResultsPage";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
-
+import ManageAdminsPage from "./pages/superadmin/ManageAdminsPage";
 // Public pages
 import Index from "./pages/Index";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
@@ -89,6 +89,7 @@ const App = () => (
 
             {/* Super Admin */}
             <Route path="/super-admin" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
+            <Route path="/super-admin/admins" element={<RoleGuard allowedRoles={['super_admin']}><ManageAdminsPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />
