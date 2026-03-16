@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
-import { BookOpen, CreditCard, Award, Wallet, Users, Copy, Trophy, TrendingUp } from 'lucide-react';
+import { BookOpen, CreditCard, Award, Wallet, Users, Trophy, TrendingUp } from 'lucide-react';
+import ReferralShareCard from '@/components/ReferralShareCard';
 import { toast } from 'sonner';
 
 interface ProfileData {
