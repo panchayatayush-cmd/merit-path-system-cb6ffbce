@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
-import WithdrawalRequestForm from '@/components/WithdrawalRequestForm';
+import WithdrawButton from '@/components/WithdrawButton';
 import WithdrawalHistory from '@/components/WithdrawalHistory';
 
 export default function CenterEarningsPage() {
@@ -54,12 +54,9 @@ export default function CenterEarningsPage() {
           <p className="text-xs text-muted-foreground mt-1">₹30 per student referral</p>
         </div>
 
-        {/* Withdrawal Request */}
-        {walletId && balance > 0 && (
-          <div className="card-shadow rounded-lg bg-card p-6">
-            <h2 className="text-sm font-semibold text-foreground mb-4">Request Withdrawal</h2>
-            <WithdrawalRequestForm walletId={walletId} balance={balance} onSuccess={load} />
-          </div>
+        {/* Withdraw Button */}
+        {walletId && (
+          <WithdrawButton walletId={walletId} balance={balance} onSuccess={load} />
         )}
 
         {/* Withdrawal History */}
