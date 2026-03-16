@@ -44,7 +44,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4">
       <div className="w-full max-w-md card-shadow rounded-lg bg-card p-8 animate-fade-in">
         <h1 className="text-xl font-semibold text-foreground mb-1">Sign In</h1>
-        <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2024</p>
+        <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2026</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

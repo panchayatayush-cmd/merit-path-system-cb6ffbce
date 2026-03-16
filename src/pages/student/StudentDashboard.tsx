@@ -79,7 +79,7 @@ export default function StudentDashboard() {
           <h1 className="text-base font-semibold text-foreground">
             Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}
           </h1>
-          <p className="text-sm text-muted-foreground">Scholarship Examination 2024</p>
+          <p className="text-sm text-muted-foreground">Scholarship Examination 2026</p>
         </div>
 
         {/* Status cards */}

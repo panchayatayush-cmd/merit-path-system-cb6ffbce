@@ -42,10 +42,10 @@ export default function Index() {
       <section className="max-w-5xl mx-auto px-4 py-16 lg:py-24">
         <div className="max-w-2xl">
           <p className="text-xs font-medium uppercase tracking-widest text-primary mb-3">
-            2024 Scholarship Program
+            2026 Scholarship Program
           </p>
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tighter leading-tight">
-            Scholarship Examination 2024: Secure your future.
+            Scholarship Examination 2026: Secure your future.
           </h2>
           <p className="text-sm text-muted-foreground mt-4 leading-relaxed max-w-lg">
             Register, complete your profile, pay the exam fee, and take the 60-question scholarship exam.
@@ -111,7 +111,7 @@ export default function Index() {
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between text-xs text-muted-foreground">
-          <span>© 2024 Scholarship Examination</span>
+          <span>© 2026 Scholarship Examination</span>
           <Link to="/verify" className="text-accent hover:underline">Verify Certificate</Link>
         </div>
       </footer>
