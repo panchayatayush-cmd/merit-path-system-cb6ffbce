@@ -40,12 +40,15 @@ export default function SuperAdminWalletsPage() {
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Balance</span>
             <p className="text-xl font-bold tabular-nums text-primary mt-1">₹{totalBalance.toFixed(2)}</p>
           </div>
-          {Object.entries(roleCounts).map(([role, data]) => (
-            <div key={role} className="card-shadow rounded-lg bg-card p-4">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{role} ({data.count})</span>
-              <p className="text-lg font-bold tabular-nums text-foreground mt-1">₹{data.balance.toFixed(2)}</p>
-            </div>
-          ))}
+          {Object.entries(roleCounts).map(([role, data]) => {
+            const d = data as { count: number; balance: number };
+            return (
+              <div key={role} className="card-shadow rounded-lg bg-card p-4">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{role} ({d.count})</span>
+                <p className="text-lg font-bold tabular-nums text-foreground mt-1">₹{d.balance.toFixed(2)}</p>
+              </div>
+            );
+          })}
         </div>
 
         {/* Table */}
