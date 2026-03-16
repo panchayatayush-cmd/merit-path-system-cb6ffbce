@@ -23,6 +23,7 @@ import StudentWalletPage from "./pages/student/StudentWalletPage";
 
 // Center pages
 import CenterDashboard from "./pages/center/CenterDashboard";
+import CenterProfilePage from "./pages/center/CenterProfilePage";
 import CenterStudentsPage from "./pages/center/CenterStudentsPage";
 import CenterEarningsPage from "./pages/center/CenterEarningsPage";
 
