@@ -53,25 +53,54 @@ export default function Index() {
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
+            {/* Desktop nav links */}
             <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">About</Link>
             <Link to="/gallery" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Gallery</Link>
             <Link to="/verify" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Verify</Link>
             {user && role ? (
               <Link to={dashboardMap[role] ?? '/'}>
-                <Button variant="outline" size="sm">Dashboard</Button>
+                <Button variant="outline" size="sm" className="hidden sm:inline-flex">Dashboard</Button>
               </Link>
             ) : (
               <>
-                <Link to="/auth/login">
+                <Link to="/auth/login" className="hidden sm:inline-flex">
                   <Button variant="outline" size="sm">Sign In</Button>
                 </Link>
-                <Link to="/auth/register">
+                <Link to="/auth/register" className="hidden sm:inline-flex">
                   <Button size="sm">Register</Button>
                 </Link>
               </>
             )}
+            {/* Mobile hamburger */}
+            <button onClick={() => setMenuOpen(!menuOpen)} className="sm:hidden p-1.5 rounded-md hover:bg-secondary transition-colors">
+              {menuOpen ? <X className="h-5 w-5 text-foreground" /> : <Menu className="h-5 w-5 text-foreground" />}
+            </button>
           </div>
         </div>
+        {/* Mobile dropdown menu */}
+        {menuOpen && (
+          <div className="sm:hidden border-t border-border bg-background px-4 py-3 space-y-2 animate-fade-in">
+            <Link to="/about" onClick={() => setMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">About Us</Link>
+            <Link to="/gallery" onClick={() => setMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">Photo Gallery</Link>
+            <Link to="/verify" onClick={() => setMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">Verify Certificate</Link>
+            <div className="border-t border-border pt-2 flex gap-2">
+              {user && role ? (
+                <Link to={dashboardMap[role] ?? '/'} onClick={() => setMenuOpen(false)} className="w-full">
+                  <Button variant="outline" size="sm" className="w-full">Dashboard</Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/auth/login" onClick={() => setMenuOpen(false)} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full">Sign In</Button>
+                  </Link>
+                  <Link to="/auth/register" onClick={() => setMenuOpen(false)} className="flex-1">
+                    <Button size="sm" className="w-full">Register</Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero */}
