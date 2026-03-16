@@ -177,23 +177,64 @@ export default function StudentProfilePage() {
     }
   };
 
-  const fields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
+  const personalFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
     { label: 'Full Name', key: 'full_name', required: true },
     { label: 'Father / Guardian Name', key: 'father_name', required: true },
     { label: 'Class (1-12)', key: 'class', type: 'number', required: true },
     { label: 'Mobile Number', key: 'mobile', required: true },
-    { label: 'School Name', key: 'school_name', required: true },
-    { label: 'School Mobile', key: 'school_mobile' },
-    { label: 'School Address', key: 'school_address' },
-    { label: 'Village', key: 'village' },
+  ];
+
+  const addressFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
+    { label: 'Village / Town', key: 'village', required: true },
     { label: 'Block', key: 'block' },
     { label: 'Tahsil', key: 'tahsil' },
     { label: 'District', key: 'district', required: true },
     { label: 'State', key: 'state', required: true, options: STATES },
     { label: 'PIN Code', key: 'pin_code', required: true },
+  ];
+
+  const schoolFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
+    { label: 'School Name', key: 'school_name', required: true },
+    { label: 'School Mobile', key: 'school_mobile' },
+    { label: 'School Address', key: 'school_address' },
+  ];
+
+  const centerFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
     { label: 'Center Code', key: 'center_code', required: true },
   ];
 
+  const renderField = (field: { label: string; key: string; type?: string; required?: boolean; options?: string[] }) => (
+    <div key={field.key}>
+      <Label htmlFor={field.key}>
+        {field.label}
+        {field.required && <span className="text-destructive ml-1">*</span>}
+      </Label>
+      {field.options ? (
+        <select
+          id={field.key}
+          value={(form as any)[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          required={field.required}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        >
+          <option value="">Select {field.label}</option>
+          {field.options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+      ) : (
+        <Input
+          id={field.key}
+          type={field.type ?? 'text'}
+          value={(form as any)[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          required={field.required}
+          min={field.type === 'number' ? '1' : undefined}
+          max={field.type === 'number' ? '12' : undefined}
+        />
+      )}
+    </div>
+  );
   const initials = form.full_name
     ? form.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : '?';
@@ -233,39 +274,36 @@ export default function StudentProfilePage() {
             <p className="text-xs text-muted-foreground">Click to upload photo (max 300×300, auto-compressed)</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {fields.map((field) => (
-              <div key={field.key}>
-                <Label htmlFor={field.key}>
-                  {field.label}
-                  {field.required && <span className="text-destructive ml-1">*</span>}
-                </Label>
-                {field.options ? (
-                  <select
-                    id={field.key}
-                    value={(form as any)[field.key]}
-                    onChange={(e) => handleChange(field.key, e.target.value)}
-                    required={field.required}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">Select {field.label}</option>
-                    {field.options.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <Input
-                    id={field.key}
-                    type={field.type ?? 'text'}
-                    value={(form as any)[field.key]}
-                    onChange={(e) => handleChange(field.key, e.target.value)}
-                    required={field.required}
-                    min={field.type === 'number' ? '1' : undefined}
-                    max={field.type === 'number' ? '12' : undefined}
-                  />
-                )}
-              </div>
-            ))}
+          {/* Personal Details */}
+          <div>
+            <h3 className="text-sm font-medium text-foreground mb-3">👤 Personal Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {personalFields.map((field) => renderField(field))}
+            </div>
+          </div>
+
+          {/* User Address */}
+          <div>
+            <h3 className="text-sm font-medium text-foreground mb-3">🏠 Your Address</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {addressFields.map((field) => renderField(field))}
+            </div>
+          </div>
+
+          {/* School Details */}
+          <div>
+            <h3 className="text-sm font-medium text-foreground mb-3">🏫 School Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {schoolFields.map((field) => renderField(field))}
+            </div>
+          </div>
+
+          {/* Center Code */}
+          <div>
+            <h3 className="text-sm font-medium text-foreground mb-3">📋 Center</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {centerFields.map((field) => renderField(field))}
+            </div>
           </div>
 
           {/* Sticky Save Button above mobile bottom nav */}
