@@ -151,6 +151,7 @@ export type Database = {
         Row: {
           attempt_id: string
           certificate_id: string
+          certificate_type: string
           class: number | null
           created_at: string
           exam_name: string | null
@@ -166,6 +167,7 @@ export type Database = {
         Insert: {
           attempt_id: string
           certificate_id: string
+          certificate_type?: string
           class?: number | null
           created_at?: string
           exam_name?: string | null
@@ -181,6 +183,7 @@ export type Database = {
         Update: {
           attempt_id?: string
           certificate_id?: string
+          certificate_type?: string
           class?: number | null
           created_at?: string
           exam_name?: string | null
