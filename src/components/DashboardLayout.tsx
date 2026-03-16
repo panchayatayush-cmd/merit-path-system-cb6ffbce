@@ -15,6 +15,7 @@ import {
   Building2,
   BarChart3,
   Shield,
+  ArrowDownToLine,
 } from 'lucide-react';
 
 interface NavItem {
