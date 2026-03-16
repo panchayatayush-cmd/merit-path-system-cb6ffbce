@@ -41,28 +41,40 @@ export default function CenterProfilePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('centers')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setForm({
-            center_name: data.center_name ?? '',
-            contact_person: data.contact_person ?? '',
-            mobile: data.mobile ?? '',
-            email: data.email ?? '',
-            address: data.address ?? '',
-            owner_village: (data as any).owner_village ?? '',
-            owner_block: (data as any).owner_block ?? '',
-            owner_tahsil: (data as any).owner_tahsil ?? '',
-            owner_district: (data as any).owner_district ?? '',
-            owner_state: (data as any).owner_state ?? '',
-            owner_pin_code: (data as any).owner_pin_code ?? '',
-          });
-        }
-      });
+    const load = async () => {
+      // Check payment status
+      const { data: paymentData } = await supabase
+        .from('payment_orders')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('order_type', 'center_registration')
+        .eq('status', 'verified')
+        .limit(1)
+        .maybeSingle();
+      setPaymentVerified(paymentData?.status === 'verified');
+
+      const { data } = await supabase
+        .from('centers')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data) {
+        setForm({
+          center_name: data.center_name ?? '',
+          contact_person: data.contact_person ?? '',
+          mobile: data.mobile ?? '',
+          email: data.email ?? '',
+          address: data.address ?? '',
+          owner_village: (data as any).owner_village ?? '',
+          owner_block: (data as any).owner_block ?? '',
+          owner_tahsil: (data as any).owner_tahsil ?? '',
+          owner_district: (data as any).owner_district ?? '',
+          owner_state: (data as any).owner_state ?? '',
+          owner_pin_code: (data as any).owner_pin_code ?? '',
+        });
+      }
+    };
+    load();
   }, [user]);
 
   const handleChange = (key: string, value: string) => {
