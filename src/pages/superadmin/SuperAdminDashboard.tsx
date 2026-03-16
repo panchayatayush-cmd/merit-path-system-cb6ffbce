@@ -32,10 +32,10 @@ export default function SuperAdminDashboard() {
   }, []);
 
   const cards = [
-    { label: 'Students', value: stats.students.toString(), icon: <Users className="h-4 w-4" /> },
+    { label: 'Total Students', value: stats.students.toString(), icon: <Users className="h-4 w-4" /> },
     { label: 'Centers', value: stats.centers.toString(), icon: <Building2 className="h-4 w-4" /> },
-    { label: 'Payments', value: stats.payments.toString(), icon: <CreditCard className="h-4 w-4" /> },
-    { label: 'Revenue', value: `₹${stats.totalRevenue.toFixed(2)}`, icon: <BarChart3 className="h-4 w-4" /> },
+    { label: 'Total Payments', value: stats.payments.toString(), icon: <CreditCard className="h-4 w-4" /> },
+    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toFixed(2)}`, icon: <BarChart3 className="h-4 w-4" /> },
     { label: 'Scholarship Fund', value: `₹${stats.fundBalance.toFixed(2)}`, icon: <Wallet className="h-4 w-4" /> },
   ];
 
@@ -54,6 +54,18 @@ export default function SuperAdminDashboard() {
               <p className="text-xl font-bold tabular-nums text-foreground">{c.value}</p>
             </div>
           ))}
+        </div>
+
+        {/* Commission Distribution Info */}
+        <div className="card-shadow rounded-lg bg-card p-4">
+          <h2 className="text-sm font-semibold text-foreground mb-2">💰 Commission Distribution (₹300 per exam)</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 text-sm">
+            <div className="text-muted-foreground">Referring Student: <span className="font-semibold text-foreground">₹50</span></div>
+            <div className="text-muted-foreground">Center: <span className="font-semibold text-foreground">₹30</span></div>
+            <div className="text-muted-foreground">Admin: <span className="font-semibold text-foreground">₹20</span></div>
+            <div className="text-muted-foreground">Super Admin: <span className="font-semibold text-foreground">₹75</span></div>
+            <div className="text-muted-foreground">Scholarship: <span className="font-semibold text-foreground">₹125</span></div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

@@ -139,6 +139,19 @@ export default function RegisterPage() {
             </div>
           )}
 
+          {role === 'student' && (
+            <div>
+              <Label htmlFor="referralCode">Referral Code (Optional)</Label>
+              <Input
+                id="referralCode"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Enter referral code if you have one"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Got a referral code from another student? Enter it here.</p>
+            </div>
+          )}
+
           <div>
             <Label htmlFor="email">Email</Label>
             <Input

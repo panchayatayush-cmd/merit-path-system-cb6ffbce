@@ -67,6 +67,20 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Prevent duplicate payouts - check if already verified
+    const { data: existingOrder } = await serviceClient
+      .from("payment_orders")
+      .select("status")
+      .eq("id", db_order_id)
+      .single();
+
+    if (existingOrder?.status === "verified") {
+      return new Response(
+        JSON.stringify({ success: true, message: "Payment already verified" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Update payment order
     const { data: updatedOrder, error: updateError } = await serviceClient
       .from("payment_orders")
@@ -82,7 +96,6 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    const amount = Number(updatedOrder?.amount ?? 0);
     const orderType = updatedOrder?.order_type;
 
     // If center registration, activate center
@@ -98,44 +111,59 @@ serve(async (req) => {
       );
     }
 
-    // Exam fee distribution below
+    // ===== EXAM FEE DISTRIBUTION (₹300 total) =====
+    // Student (referring): ₹50, Center: ₹30, Admin: ₹20, Super Admin: ₹75, Scholarship: ₹125
 
-    // Distribute payment: Student ₹50, Center ₹75, Admin ₹25, Super Admin ₹75, rest → scholarship
-    // Get student's center_code to find center user
+    // Get student's profile for center_code and referred_by
     const { data: profile } = await serviceClient
       .from("profiles")
-      .select("center_code")
+      .select("center_code, referred_by, referral_code")
       .eq("user_id", user.id)
       .single();
 
-    // Credit student wallet
-    const { data: studentWallet } = await serviceClient
-      .from("wallets")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("role", "student")
-      .single();
-
-    if (studentWallet) {
-      const { data: currentWallet } = await serviceClient
-        .from("wallets")
-        .select("balance")
-        .eq("id", studentWallet.id)
+    // 1. Credit REFERRING student ₹50 (if referred_by exists)
+    if (profile?.referred_by) {
+      const { data: referrerProfile } = await serviceClient
+        .from("profiles")
+        .select("user_id")
+        .eq("referral_code", profile.referred_by)
         .single();
-      
-      await serviceClient.from("wallet_transactions").insert({
-        wallet_id: studentWallet.id,
-        amount: 50,
-        type: "credit",
-        description: "Exam fee cashback",
-      });
-      await serviceClient
-        .from("wallets")
-        .update({ balance: Number(currentWallet?.balance ?? 0) + 50 })
-        .eq("id", studentWallet.id);
+
+      if (referrerProfile) {
+        const { data: referrerWallet } = await serviceClient
+          .from("wallets")
+          .select("id, balance")
+          .eq("user_id", referrerProfile.user_id)
+          .eq("role", "student")
+          .single();
+
+        if (referrerWallet) {
+          await serviceClient.from("wallet_transactions").insert({
+            wallet_id: referrerWallet.id,
+            amount: 50,
+            type: "credit",
+            description: "Referral commission - student referred",
+          });
+          await serviceClient
+            .from("wallets")
+            .update({ balance: Number(referrerWallet.balance) + 50 })
+            .eq("id", referrerWallet.id);
+        }
+
+        // Log commission
+        await serviceClient.from("commissions").insert({
+          student_id: referrerProfile.user_id,
+          referral_code: profile.referred_by,
+          center_code: profile.center_code,
+          payment_id: db_order_id,
+          role: "referrer",
+          commission_amount: 50,
+          description: "Referral commission from student exam fee",
+        });
+      }
     }
 
-    // Credit center wallet if center_code exists
+    // 2. Credit CENTER owner ₹30
     if (profile?.center_code) {
       const { data: center } = await serviceClient
         .from("centers")
@@ -154,30 +182,129 @@ serve(async (req) => {
         if (centerWallet) {
           await serviceClient.from("wallet_transactions").insert({
             wallet_id: centerWallet.id,
-            amount: 75,
+            amount: 30,
             type: "credit",
             description: "Student exam fee commission",
           });
           await serviceClient
             .from("wallets")
-            .update({ balance: Number(centerWallet.balance) + 75 })
+            .update({ balance: Number(centerWallet.balance) + 30 })
             .eq("id", centerWallet.id);
         }
+
+        // Log commission
+        await serviceClient.from("commissions").insert({
+          student_id: user.id,
+          referral_code: profile.referred_by ?? null,
+          center_code: profile.center_code,
+          payment_id: db_order_id,
+          role: "center",
+          commission_amount: 30,
+          description: "Center commission from student exam fee",
+        });
       }
     }
 
-    // Scholarship fund
-    const scholarshipAmount = amount - 50 - 75 - 25 - 75;
-    if (scholarshipAmount > 0) {
-      await serviceClient.from("scholarship_fund").insert({
-        amount: scholarshipAmount,
-        source: "exam_fee",
-        payment_order_id: db_order_id,
-      });
+    // 3. Credit ADMIN wallets ₹20 (split among all admins)
+    const { data: adminRoles } = await serviceClient
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+
+    if (adminRoles && adminRoles.length > 0) {
+      const perAdmin = 20 / adminRoles.length;
+      for (const admin of adminRoles) {
+        const { data: adminWallet } = await serviceClient
+          .from("wallets")
+          .select("id, balance")
+          .eq("user_id", admin.user_id)
+          .eq("role", "admin")
+          .single();
+
+        if (adminWallet) {
+          await serviceClient.from("wallet_transactions").insert({
+            wallet_id: adminWallet.id,
+            amount: perAdmin,
+            type: "credit",
+            description: "Admin commission from exam fee",
+          });
+          await serviceClient
+            .from("wallets")
+            .update({ balance: Number(adminWallet.balance) + perAdmin })
+            .eq("id", adminWallet.id);
+        }
+
+        await serviceClient.from("commissions").insert({
+          student_id: user.id,
+          center_code: profile?.center_code ?? null,
+          payment_id: db_order_id,
+          role: "admin",
+          commission_amount: perAdmin,
+          description: "Admin commission from exam fee",
+        });
+      }
+    }
+
+    // 4. Credit SUPER ADMIN ₹75
+    const { data: superAdminRoles } = await serviceClient
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "super_admin");
+
+    if (superAdminRoles && superAdminRoles.length > 0) {
+      const perSuperAdmin = 75 / superAdminRoles.length;
+      for (const sa of superAdminRoles) {
+        const { data: saWallet } = await serviceClient
+          .from("wallets")
+          .select("id, balance")
+          .eq("user_id", sa.user_id)
+          .eq("role", "super_admin")
+          .single();
+
+        if (saWallet) {
+          await serviceClient.from("wallet_transactions").insert({
+            wallet_id: saWallet.id,
+            amount: perSuperAdmin,
+            type: "credit",
+            description: "Super Admin commission from exam fee",
+          });
+          await serviceClient
+            .from("wallets")
+            .update({ balance: Number(saWallet.balance) + perSuperAdmin })
+            .eq("id", saWallet.id);
+        }
+
+        await serviceClient.from("commissions").insert({
+          student_id: user.id,
+          center_code: profile?.center_code ?? null,
+          payment_id: db_order_id,
+          role: "super_admin",
+          commission_amount: perSuperAdmin,
+          description: "Super Admin commission from exam fee",
+        });
+      }
+    }
+
+    // 5. Scholarship fund ₹125
+    await serviceClient.from("scholarship_fund").insert({
+      amount: 125,
+      source: "exam_fee",
+      payment_order_id: db_order_id,
+    });
+
+    // Generate referral code for the paying student if not already set
+    if (!profile?.referral_code) {
+      const { data: refCode } = await serviceClient.rpc("generate_referral_code");
+      if (refCode) {
+        await serviceClient
+          .from("profiles")
+          .update({ referral_code: refCode })
+          .eq("user_id", user.id);
+      }
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: "Payment verified and distributed" }),
+      JSON.stringify({ success: true, message: "Payment verified and commissions distributed" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
