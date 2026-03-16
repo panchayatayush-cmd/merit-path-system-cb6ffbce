@@ -147,20 +147,9 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* Referral Code Card */}
+        {/* Referral Share Card */}
         {profile?.referral_code && (
-          <div className="card-shadow rounded-lg bg-card p-4">
-            <h2 className="text-sm font-semibold text-foreground mb-2">🔗 Your Referral Code</h2>
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-lg font-bold text-primary">{profile.referral_code}</span>
-              <button onClick={copyReferralCode} className="p-1.5 rounded-md hover:bg-secondary transition-colors">
-                <Copy className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Share this code. You earn <span className="font-semibold text-primary">₹70</span> + <span className="font-semibold text-primary">2 bonus marks</span> per referral!
-            </p>
-          </div>
+          <ReferralShareCard referralCode={profile.referral_code} />
         )}
 
         {/* Referral Stats */}
