@@ -169,38 +169,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Referral System */}
-      <section className="border-t border-border">
-        <div className="max-w-6xl mx-auto px-4 py-16">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-bold text-foreground tracking-tight">Referral Earnings System</h3>
-          </div>
-          <p className="text-sm text-muted-foreground mb-8 max-w-lg">
-            Every student gets a unique referral code. When someone registers using your code, you earn ₹70 instantly + bonus marks in ranking!
-          </p>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { role: 'Referring Student', amount: '₹70', icon: <Users className="h-4 w-4" /> },
-              { role: 'Center Owner', amount: '₹40', icon: <Shield className="h-4 w-4" /> },
-              { role: 'Admin', amount: '₹30', icon: <TrendingUp className="h-4 w-4" /> },
-              { role: 'Super Admin', amount: '₹60', icon: <Star className="h-4 w-4" /> },
-            ].map((item) => (
-              <div key={item.role} className="card-shadow rounded-lg bg-card p-4 text-center">
-                <div className="flex justify-center text-primary mb-2">{item.icon}</div>
-                <p className="text-2xl font-bold tabular-nums text-foreground">{item.amount}</p>
-                <p className="text-xs text-muted-foreground mt-1">{item.role}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 card-shadow rounded-lg bg-primary/5 border border-primary/20 p-4 text-center">
-            <p className="text-sm text-foreground font-semibold">
-              Remaining ₹100 → <span className="text-primary">Scholarship Fund Pool</span>
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Automatically added from every payment</p>
-          </div>
-        </div>
-      </section>
+
 
       {/* Center Code Partner Program */}
       <section className="border-t border-border bg-secondary/30">
