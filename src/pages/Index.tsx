@@ -82,6 +82,7 @@ export default function Index() {
               <span className="text-primary">Scholarship Exam</span>
             </h2>
             <p className="text-sm font-semibold text-foreground mt-2">Through Gram Panchayat Help Desk Mission</p>
+            <p className="text-sm font-bold text-accent mt-1">EXAMINATION MANAGED BY S.V. MEDIA FILMS PRODUCTION</p>
             <p className="text-sm text-muted-foreground mt-4 leading-relaxed max-w-lg">
               Empowering students across India through merit-based scholarships. Our mission is to recognize and reward academic excellence while providing equal opportunities for all. Register now for Class 1–12 examinations.
             </p>
