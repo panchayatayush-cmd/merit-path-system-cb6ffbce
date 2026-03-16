@@ -403,9 +403,11 @@ export default function Index() {
               <p className="text-sm font-semibold text-foreground mb-3">Quick Links</p>
               <ul className="space-y-2 text-xs text-muted-foreground">
                 <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+                <li><Link to="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
+                <li><Link to="/gallery" className="hover:text-foreground transition-colors">Photo Gallery</Link></li>
                 <li><Link to="/auth/register" className="hover:text-foreground transition-colors">Register Now</Link></li>
-                <li><Link to="/auth/login" className="hover:text-foreground transition-colors">Login</Link></li>
                 <li><Link to="/verify" className="hover:text-foreground transition-colors">Verify Certificate</Link></li>
+                <li><Link to="/auth/login" className="hover:text-foreground transition-colors">Login</Link></li>
               </ul>
             </div>
             {/* Contact */}
