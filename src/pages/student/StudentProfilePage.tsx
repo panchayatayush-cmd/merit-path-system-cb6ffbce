@@ -177,20 +177,29 @@ export default function StudentProfilePage() {
     }
   };
 
-  const fields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
+  const personalFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
     { label: 'Full Name', key: 'full_name', required: true },
     { label: 'Father / Guardian Name', key: 'father_name', required: true },
     { label: 'Class (1-12)', key: 'class', type: 'number', required: true },
     { label: 'Mobile Number', key: 'mobile', required: true },
-    { label: 'School Name', key: 'school_name', required: true },
-    { label: 'School Mobile', key: 'school_mobile' },
-    { label: 'School Address', key: 'school_address' },
-    { label: 'Village', key: 'village' },
+  ];
+
+  const addressFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
+    { label: 'Village / Town', key: 'village', required: true },
     { label: 'Block', key: 'block' },
     { label: 'Tahsil', key: 'tahsil' },
     { label: 'District', key: 'district', required: true },
     { label: 'State', key: 'state', required: true, options: STATES },
     { label: 'PIN Code', key: 'pin_code', required: true },
+  ];
+
+  const schoolFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
+    { label: 'School Name', key: 'school_name', required: true },
+    { label: 'School Mobile', key: 'school_mobile' },
+    { label: 'School Address', key: 'school_address' },
+  ];
+
+  const centerFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
     { label: 'Center Code', key: 'center_code', required: true },
   ];
 
