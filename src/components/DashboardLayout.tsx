@@ -35,6 +35,7 @@ const studentNav: NavItem[] = [
 
 const centerNav: NavItem[] = [
   { label: 'Dashboard', href: '/center', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'Payment', href: '/center/payment', icon: <CreditCard className="h-4 w-4" /> },
   { label: 'Profile', href: '/center/profile', icon: <User className="h-4 w-4" /> },
   { label: 'Students', href: '/center/students', icon: <Users className="h-4 w-4" /> },
   { label: 'Earnings', href: '/center/earnings', icon: <Wallet className="h-4 w-4" /> },

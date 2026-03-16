@@ -98,14 +98,7 @@ serve(async (req) => {
       );
     }
 
-    // Get payment order for amount info
-    const { data: order } = await serviceClient
-      .from("payment_orders")
-      .select("amount")
-      .eq("id", db_order_id)
-      .single();
-
-    const amount = Number(order?.amount ?? 0);
+    // Exam fee distribution below
 
     // Distribute payment: Student ₹50, Center ₹75, Admin ₹25, Super Admin ₹75, rest → scholarship
     // Get student's center_code to find center user
