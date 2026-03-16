@@ -204,7 +204,7 @@ export default function StudentProfilePage() {
         <h1 className="text-base font-semibold text-foreground mb-1">Complete Your Profile</h1>
         <p className="text-sm text-muted-foreground mb-6">All required fields must be filled before taking the exam.</p>
 
-        <form onSubmit={handleSubmit} className="card-shadow rounded-lg bg-card p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="card-shadow rounded-lg bg-card p-6 pb-24 space-y-6">
           {/* Photo Upload */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative group cursor-pointer" onClick={() => fileRef.current?.click()}>
@@ -268,9 +268,12 @@ export default function StudentProfilePage() {
             ))}
           </div>
 
-          <Button type="submit" className="w-full sm:w-auto" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Profile'}
-          </Button>
+          {/* Sticky Save Button above mobile bottom nav */}
+          <div className="fixed bottom-16 left-0 right-0 lg:relative lg:bottom-auto p-4 lg:p-0 bg-background/95 backdrop-blur-sm border-t border-border lg:border-0 lg:bg-transparent z-40">
+            <Button type="submit" className="w-full lg:w-auto" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Profile'}
+            </Button>
+          </div>
         </form>
       </div>
     </DashboardLayout>
