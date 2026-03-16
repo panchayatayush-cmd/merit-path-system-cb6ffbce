@@ -470,6 +470,45 @@ export type Database = {
           },
         ]
       }
+      scholarship_winners: {
+        Row: {
+          category: string
+          created_at: string
+          exam_score: number | null
+          final_score: number | null
+          id: string
+          payment_status: string
+          prize_amount: number
+          rank: number
+          referral_bonus: number | null
+          student_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          exam_score?: number | null
+          final_score?: number | null
+          id?: string
+          payment_status?: string
+          prize_amount: number
+          rank: number
+          referral_bonus?: number | null
+          student_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          exam_score?: number | null
+          final_score?: number | null
+          id?: string
+          payment_status?: string
+          prize_amount?: number
+          rank?: number
+          referral_bonus?: number | null
+          student_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
