@@ -203,7 +203,40 @@ export default function StudentProfilePage() {
     { label: 'Center Code', key: 'center_code', required: true },
   ];
 
-  const initials = form.full_name
+  const renderField = (field: { label: string; key: string; type?: string; required?: boolean; options?: string[] }) => (
+    <div key={field.key}>
+      <Label htmlFor={field.key}>
+        {field.label}
+        {field.required && <span className="text-destructive ml-1">*</span>}
+      </Label>
+      {field.options ? (
+        <select
+          id={field.key}
+          value={(form as any)[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          required={field.required}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        >
+          <option value="">Select {field.label}</option>
+          {field.options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+      ) : (
+        <Input
+          id={field.key}
+          type={field.type ?? 'text'}
+          value={(form as any)[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          required={field.required}
+          min={field.type === 'number' ? '1' : undefined}
+          max={field.type === 'number' ? '12' : undefined}
+        />
+      )}
+    </div>
+  );
+
+
     ? form.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
