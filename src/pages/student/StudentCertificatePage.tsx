@@ -186,7 +186,7 @@ export default function StudentCertificatePage() {
       // Exam name
       doc.setFontSize(9);
       doc.setTextColor(107, 114, 128);
-      doc.text(certificate.exam_name ?? 'Scholarship Examination 2024', w / 2, h - 22, { align: 'center' });
+      doc.text(certificate.exam_name ?? 'Scholarship Examination 2026', w / 2, h - 22, { align: 'center' });
 
       doc.save(`Certificate_${certificate.certificate_id}.pdf`);
       toast.success('Certificate downloaded!');

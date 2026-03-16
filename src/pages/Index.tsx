@@ -111,7 +111,7 @@ export default function Index() {
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between text-xs text-muted-foreground">
-          <span>© 2024 Scholarship Examination</span>
+          <span>© 2026 Scholarship Examination</span>
           <Link to="/verify" className="text-accent hover:underline">Verify Certificate</Link>
         </div>
       </footer>
