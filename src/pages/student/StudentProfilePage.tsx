@@ -204,7 +204,7 @@ export default function StudentProfilePage() {
         <h1 className="text-base font-semibold text-foreground mb-1">Complete Your Profile</h1>
         <p className="text-sm text-muted-foreground mb-6">All required fields must be filled before taking the exam.</p>
 
-        <form onSubmit={handleSubmit} className="card-shadow rounded-lg bg-card p-6 pb-24 space-y-6">
+        <form onSubmit={handleSubmit} className="card-shadow rounded-lg bg-card p-6 pb-32 space-y-6">
           {/* Photo Upload */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative group cursor-pointer" onClick={() => fileRef.current?.click()}>
