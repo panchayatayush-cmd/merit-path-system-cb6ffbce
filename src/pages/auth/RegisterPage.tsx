@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<RegisterRole>('student');
   const [centerName, setCenterName] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, refreshRole } = useAuth();
   const navigate = useNavigate();
@@ -72,6 +73,14 @@ export default function RegisterPage() {
         balance: 0,
       });
 
+      // If student with referral code, save it
+      if (role === 'student' && referralCode.trim()) {
+        await supabase
+          .from('profiles')
+          .update({ referred_by: referralCode.trim().toUpperCase() } as any)
+          .eq('user_id', userId);
+      }
+
       // Refresh role in AuthContext so RoleGuard works
       await refreshRole();
 
@@ -127,6 +136,19 @@ export default function RegisterPage() {
                 required
                 placeholder="Enter center name"
               />
+            </div>
+          )}
+
+          {role === 'student' && (
+            <div>
+              <Label htmlFor="referralCode">Referral Code (Optional)</Label>
+              <Input
+                id="referralCode"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Enter referral code if you have one"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Got a referral code from another student? Enter it here.</p>
             </div>
           )}
 

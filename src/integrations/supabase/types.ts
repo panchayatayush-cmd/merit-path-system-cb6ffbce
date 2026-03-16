@@ -133,6 +133,50 @@ export type Database = {
           },
         ]
       }
+      commissions: {
+        Row: {
+          center_code: string | null
+          commission_amount: number
+          created_at: string
+          description: string | null
+          id: string
+          payment_id: string | null
+          referral_code: string | null
+          role: string
+          student_id: string
+        }
+        Insert: {
+          center_code?: string | null
+          commission_amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          payment_id?: string | null
+          referral_code?: string | null
+          role: string
+          student_id: string
+        }
+        Update: {
+          center_code?: string | null
+          commission_amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          payment_id?: string | null
+          referral_code?: string | null
+          role?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payment_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_answers: {
         Row: {
           attempt_id: string
@@ -277,6 +321,8 @@ export type Database = {
           photo_url: string | null
           pin_code: string | null
           profile_completed: boolean | null
+          referral_code: string | null
+          referred_by: string | null
           school_address: string | null
           school_block: string | null
           school_district: string | null
@@ -306,6 +352,8 @@ export type Database = {
           photo_url?: string | null
           pin_code?: string | null
           profile_completed?: boolean | null
+          referral_code?: string | null
+          referred_by?: string | null
           school_address?: string | null
           school_block?: string | null
           school_district?: string | null
@@ -335,6 +383,8 @@ export type Database = {
           photo_url?: string | null
           pin_code?: string | null
           profile_completed?: boolean | null
+          referral_code?: string | null
+          referred_by?: string | null
           school_address?: string | null
           school_block?: string | null
           school_district?: string | null
@@ -512,6 +562,7 @@ export type Database = {
     }
     Functions: {
       generate_center_code: { Args: never; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

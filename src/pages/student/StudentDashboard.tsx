@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
-import { BookOpen, CreditCard, Award, Wallet } from 'lucide-react';
+import { BookOpen, CreditCard, Award, Wallet, Users, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ProfileData {
   full_name: string | null;
   profile_completed: boolean | null;
   class: number | null;
   center_code: string | null;
+  referral_code: string | null;
 }
 
 export default function StudentDashboard() {
@@ -19,6 +21,8 @@ export default function StudentDashboard() {
   const [examPaid, setExamPaid] = useState(false);
   const [examCompleted, setExamCompleted] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [referralEarnings, setReferralEarnings] = useState(0);
+  const [referredCount, setReferredCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -26,10 +30,10 @@ export default function StudentDashboard() {
     const load = async () => {
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('full_name, profile_completed, class, center_code')
+        .select('full_name, profile_completed, class, center_code, referral_code')
         .eq('user_id', user.id)
         .maybeSingle();
-      setProfile(profileData);
+      setProfile(profileData as ProfileData | null);
 
       const { data: paymentData } = await supabase
         .from('payment_orders')
@@ -54,9 +58,27 @@ export default function StudentDashboard() {
         .eq('user_id', user.id)
         .maybeSingle();
       setWalletBalance(Number(walletData?.balance ?? 0));
+
+      // Referral earnings from commissions
+      const { data: commissions } = await supabase
+        .from('commissions')
+        .select('commission_amount')
+        .eq('student_id', user.id)
+        .eq('role', 'referrer');
+      
+      const earnings = (commissions ?? []).reduce((sum, c) => sum + Number(c.commission_amount), 0);
+      setReferralEarnings(earnings);
+      setReferredCount((commissions ?? []).length);
     };
     load();
   }, [user]);
+
+  const copyReferralCode = () => {
+    if (profile?.referral_code) {
+      navigator.clipboard.writeText(profile.referral_code);
+      toast.success('Referral code copied!');
+    }
+  };
 
   const getExamFee = (studentClass: number | null) => {
     if (!studentClass) return 0;
@@ -83,7 +105,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Status cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <StatusCard
             icon={<BookOpen className="h-4 w-4" />}
             label="Exam Status"
@@ -108,7 +130,38 @@ export default function StudentDashboard() {
             value={`₹${walletBalance.toFixed(2)}`}
             variant="default"
           />
+          <StatusCard
+            icon={<Users className="h-4 w-4" />}
+            label="Referral Earnings"
+            value={`₹${referralEarnings.toFixed(2)}`}
+            variant="success"
+          />
+          <StatusCard
+            icon={<Users className="h-4 w-4" />}
+            label="Referred Students"
+            value={referredCount.toString()}
+            variant="default"
+          />
         </div>
+
+        {/* Referral Code Card */}
+        {profile?.referral_code && (
+          <div className="card-shadow rounded-lg bg-card p-4">
+            <h2 className="text-sm font-semibold text-foreground mb-2">🔗 Your Referral Code</h2>
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-lg font-bold text-primary">{profile.referral_code}</span>
+              <button
+                onClick={copyReferralCode}
+                className="p-1.5 rounded-md hover:bg-secondary transition-colors"
+              >
+                <Copy className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Share this code with friends. You earn ₹50 when they register and pay the exam fee!
+            </p>
+          </div>
+        )}
 
         {/* Steps */}
         <div className="card-shadow rounded-lg bg-card p-6">
@@ -174,5 +227,3 @@ function StatusCard({
     </div>
   );
 }
-
-
