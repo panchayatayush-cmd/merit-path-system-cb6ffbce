@@ -95,8 +95,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4 py-8">
       <div className="w-full max-w-md card-shadow rounded-lg bg-card p-8 animate-fade-in">
+        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
+          <ChevronLeft className="h-3 w-3" /> Home
+        </Link>
         <h1 className="text-xl font-semibold text-foreground mb-1">Create Account</h1>
         <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2026</p>
 
