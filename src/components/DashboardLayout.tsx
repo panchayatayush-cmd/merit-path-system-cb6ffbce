@@ -96,9 +96,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex min-h-screen bg-secondary/30">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex w-60 flex-col bg-sidebar border-r border-sidebar-border">
-        <div className="p-4 border-b border-sidebar-border">
-          <h2 className="text-sm font-semibold text-sidebar-foreground">Scholarship Exam</h2>
-          <p className="text-xs text-sidebar-foreground/60 mt-0.5">{roleLabel[role ?? ''] ?? ''}</p>
+        <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-sidebar-foreground">Scholarship Exam</h2>
+            <p className="text-xs text-sidebar-foreground/60 mt-0.5">{roleLabel[role ?? ''] ?? ''}</p>
+          </div>
+          <NotificationBell />
+        </div>
         </div>
         <nav className="flex-1 p-2 space-y-0.5">
           {navItems.map((item) => {
