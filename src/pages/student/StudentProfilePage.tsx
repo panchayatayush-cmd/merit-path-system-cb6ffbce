@@ -64,6 +64,12 @@ export default function StudentProfilePage() {
     school_name: '',
     school_mobile: '',
     school_address: '',
+    school_village: '',
+    school_block: '',
+    school_tahsil: '',
+    school_district: '',
+    school_state: '',
+    school_pin_code: '',
     village: '',
     block: '',
     tahsil: '',
@@ -90,6 +96,12 @@ export default function StudentProfilePage() {
             school_name: data.school_name ?? '',
             school_mobile: data.school_mobile ?? '',
             school_address: data.school_address ?? '',
+            school_village: (data as any).school_village ?? '',
+            school_block: (data as any).school_block ?? '',
+            school_tahsil: (data as any).school_tahsil ?? '',
+            school_district: (data as any).school_district ?? '',
+            school_state: (data as any).school_state ?? '',
+            school_pin_code: (data as any).school_pin_code ?? '',
             village: data.village ?? '',
             block: data.block ?? '',
             tahsil: data.tahsil ?? '',
@@ -157,14 +169,21 @@ export default function StudentProfilePage() {
 
     setLoading(true);
     try {
+      const { school_village, school_block, school_tahsil, school_district, school_state, school_pin_code, ...rest } = form;
       const { error } = await supabase
         .from('profiles')
         .update({
-          ...form,
+          ...rest,
+          school_village,
+          school_block,
+          school_tahsil,
+          school_district,
+          school_state,
+          school_pin_code,
           class: parseInt(form.class) || null,
           center_code: form.center_code.toUpperCase(),
           profile_completed: true,
-        })
+        } as any)
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -197,6 +216,12 @@ export default function StudentProfilePage() {
     { label: 'School Name', key: 'school_name', required: true },
     { label: 'School Mobile', key: 'school_mobile' },
     { label: 'School Address', key: 'school_address' },
+    { label: 'School Village / Town', key: 'school_village' },
+    { label: 'School Block', key: 'school_block' },
+    { label: 'School Tahsil', key: 'school_tahsil' },
+    { label: 'School District', key: 'school_district', required: true },
+    { label: 'School State', key: 'school_state', required: true, options: STATES },
+    { label: 'School PIN Code', key: 'school_pin_code' },
   ];
 
   const centerFields: { label: string; key: string; type?: string; required?: boolean; options?: string[] }[] = [
