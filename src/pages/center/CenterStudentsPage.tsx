@@ -19,7 +19,7 @@ export default function CenterStudentsPage() {
       if (center?.center_code) {
         const { data } = await supabase
           .from('profiles')
-          .select('full_name, class, mobile, email, profile_completed, created_at')
+          .select('full_name, class, created_at')
           .eq('center_code', center.center_code)
           .order('created_at', { ascending: false });
         setStudents(data ?? []);
