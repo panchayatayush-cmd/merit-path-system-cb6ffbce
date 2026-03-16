@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   BookOpen, Shield, Award, Users, Trophy, Gift, TrendingUp, Star,
-  ChevronRight, Mail, Phone, MapPin, Clock, MessageSquare,
+  ChevronRight, Mail, Phone, MapPin, Clock, MessageSquare, Menu, X,
 } from 'lucide-react';
 import gphdmLogo from '@/assets/gphdm-logo.jpg';
 
