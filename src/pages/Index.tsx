@@ -50,7 +50,10 @@ export default function Index() {
               <p className="text-[10px] text-muted-foreground leading-tight">Gram Panchayat Help Desk Mission</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1 sm:gap-3">
+            <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">About</Link>
+            <Link to="/gallery" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Gallery</Link>
+            <Link to="/verify" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Verify</Link>
             {user && role ? (
               <Link to={dashboardMap[role] ?? '/'}>
                 <Button variant="outline" size="sm">Dashboard</Button>
