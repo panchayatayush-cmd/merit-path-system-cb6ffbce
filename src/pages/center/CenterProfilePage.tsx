@@ -147,6 +147,25 @@ export default function CenterProfilePage() {
     </div>
   );
 
+  if (paymentVerified === false) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-lg mx-auto space-y-6">
+          <div className="card-shadow rounded-lg bg-card p-6 text-center space-y-4">
+            <Lock className="h-10 w-10 text-muted-foreground mx-auto" />
+            <h2 className="text-base font-semibold text-foreground">Profile Locked</h2>
+            <p className="text-sm text-muted-foreground">
+              कृपया पहले ₹500 registration fee pay करें। Payment के बाद आपका Center Code और Profile unlock हो जाएगा।
+            </p>
+            <Button onClick={() => navigate('/center/payment')} className="w-full">
+              Go to Payment
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
