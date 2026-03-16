@@ -42,7 +42,7 @@ serve(async (req) => {
       body: JSON.stringify({
         amount: Math.round(amount * 100), // paise
         currency: "INR",
-        receipt: `${order_type}_${user.id.slice(0, 8)}_${Date.now()}`,
+        receipt: `${order_type}_${user.id.slice(0, 8)}_${Date.now()}`.substring(0, 40),
       }),
     });
 
