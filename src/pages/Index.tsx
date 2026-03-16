@@ -30,6 +30,7 @@ const faqItems = [
 ];
 
 export default function Index() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const { user, role } = useAuth();
 
   const dashboardMap: Record<string, string> = {
