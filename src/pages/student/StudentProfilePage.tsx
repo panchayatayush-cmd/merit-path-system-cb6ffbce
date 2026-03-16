@@ -169,14 +169,21 @@ export default function StudentProfilePage() {
 
     setLoading(true);
     try {
+      const { school_village, school_block, school_tahsil, school_district, school_state, school_pin_code, ...rest } = form;
       const { error } = await supabase
         .from('profiles')
         .update({
-          ...form,
+          ...rest,
+          school_village,
+          school_block,
+          school_tahsil,
+          school_district,
+          school_state,
+          school_pin_code,
           class: parseInt(form.class) || null,
           center_code: form.center_code.toUpperCase(),
           profile_completed: true,
-        })
+        } as any)
         .eq('user_id', user.id);
 
       if (error) throw error;
