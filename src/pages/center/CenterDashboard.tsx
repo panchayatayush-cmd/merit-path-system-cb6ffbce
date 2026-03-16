@@ -73,12 +73,18 @@ export default function CenterDashboard() {
           </div>
         </div>
 
-        {!center?.is_active && (
-          <div className="card-shadow rounded-lg bg-card p-6 border-l-4 border-warning">
-            <p className="text-sm text-foreground font-medium">Center Not Active</p>
+        {!center?.payment_verified && (
+          <div className="card-shadow rounded-lg bg-card p-6 border-l-4 border-destructive">
+            <p className="text-sm text-foreground font-medium">⚠️ Payment Required</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Complete your registration payment of ₹500 to activate your center.
+              ₹500 registration fee pay करें। बिना payment के Center Code और Profile unlock नहीं होगा।
             </p>
+            <button
+              onClick={() => window.location.href = '/center/payment'}
+              className="mt-3 text-sm font-medium text-primary hover:underline"
+            >
+              Pay Now →
+            </button>
           </div>
         )}
       </div>
