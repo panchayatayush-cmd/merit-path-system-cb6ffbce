@@ -72,6 +72,9 @@ export default function RegisterPage() {
         balance: 0,
       });
 
+      // Refresh role in AuthContext so RoleGuard works
+      await refreshRole();
+
       toast.success('Registration successful!');
       navigate(role === 'student' ? '/student/profile' : '/center');
     } catch (error: any) {
