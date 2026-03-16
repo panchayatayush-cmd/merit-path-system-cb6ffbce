@@ -14,6 +14,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_generated_questions: {
+        Row: {
+          class_id: string
+          correct_option: number
+          created_at: string
+          difficulty: string
+          generated_by: string
+          id: string
+          is_approved: boolean
+          options: Json
+          points: number
+          question_text: string
+          question_type: string
+          subject_id: string
+          topic_id: string
+        }
+        Insert: {
+          class_id: string
+          correct_option?: number
+          created_at?: string
+          difficulty?: string
+          generated_by?: string
+          id?: string
+          is_approved?: boolean
+          options?: Json
+          points?: number
+          question_text: string
+          question_type?: string
+          subject_id: string
+          topic_id: string
+        }
+        Update: {
+          class_id?: string
+          correct_option?: number
+          created_at?: string
+          difficulty?: string
+          generated_by?: string
+          id?: string
+          is_approved?: boolean
+          options?: Json
+          points?: number
+          question_text?: string
+          question_type?: string
+          subject_id?: string
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generated_questions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_questions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_questions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       centers: {
         Row: {
           address: string | null
@@ -538,6 +608,104 @@ export type Database = {
           student_id?: string
         }
         Relationships: []
+      }
+      syllabus_classes: {
+        Row: {
+          class_name: string
+          class_number: number
+          created_at: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          class_name: string
+          class_number: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          class_name?: string
+          class_number?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
+      syllabus_subjects: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          subject_name: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          subject_name: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          subject_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllabus_subjects_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      syllabus_topics: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          status: string
+          subject_id: string
+          topic_name: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          subject_id: string
+          topic_name: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          subject_id?: string
+          topic_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllabus_topics_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syllabus_topics_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

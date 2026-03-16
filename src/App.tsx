@@ -43,6 +43,8 @@ import SuperAdminPaymentsPage from "./pages/superadmin/SuperAdminPaymentsPage";
 import SuperAdminWalletsPage from "./pages/superadmin/SuperAdminWalletsPage";
 import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsPage";
 import SuperAdminGalleryPage from "./pages/superadmin/SuperAdminGalleryPage";
+import SuperAdminSyllabusPage from "./pages/superadmin/SuperAdminSyllabusPage";
+import SuperAdminAIExamPage from "./pages/superadmin/SuperAdminAIExamPage";
 // Public pages
 import Index from "./pages/Index";
 import AboutUsPage from "./pages/AboutUsPage";
@@ -102,6 +104,8 @@ const App = () => (
             <Route path="/super-admin/wallets" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminWalletsPage /></RoleGuard>} />
             <Route path="/super-admin/withdrawals" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminWithdrawalsPage /></RoleGuard>} />
             <Route path="/super-admin/gallery" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminGalleryPage /></RoleGuard>} />
+            <Route path="/super-admin/syllabus" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminSyllabusPage /></RoleGuard>} />
+            <Route path="/super-admin/ai-exam" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminAIExamPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />
