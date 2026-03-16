@@ -334,6 +334,53 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_schedules: {
+        Row: {
+          class_id: string
+          created_at: string
+          difficulty: string
+          exam_day: number
+          exam_duration_minutes: number
+          id: string
+          is_active: boolean
+          num_questions: number
+          question_type: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          difficulty?: string
+          exam_day?: number
+          exam_duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          num_questions?: number
+          question_type?: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          difficulty?: string
+          exam_day?: number
+          exam_duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          num_questions?: number
+          question_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: true
+            referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gallery_photos: {
         Row: {
           created_at: string
@@ -537,6 +584,93 @@ export type Database = {
           time_limit?: number
         }
         Relationships: []
+      }
+      scheduled_exam_questions: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          question_order: number
+          scheduled_exam_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          question_order?: number
+          scheduled_exam_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          question_order?: number
+          scheduled_exam_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_exam_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "ai_generated_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_exam_questions_scheduled_exam_id_fkey"
+            columns: ["scheduled_exam_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_exams: {
+        Row: {
+          class_id: string
+          created_at: string
+          exam_date: string
+          exam_duration_minutes: number
+          id: string
+          schedule_id: string
+          status: string
+          total_questions: number
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          exam_date: string
+          exam_duration_minutes?: number
+          id?: string
+          schedule_id: string
+          status?: string
+          total_questions?: number
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          exam_date?: string
+          exam_duration_minutes?: number
+          id?: string
+          schedule_id?: string
+          status?: string
+          total_questions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_exams_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_exams_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "exam_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scholarship_fund: {
         Row: {
