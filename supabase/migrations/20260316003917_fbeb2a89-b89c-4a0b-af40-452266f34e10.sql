@@ -1,0 +1,1 @@
+CREATE POLICY "Students can insert own certificates" ON public.certificates FOR INSERT TO public WITH CHECK (auth.uid() = student_id);
