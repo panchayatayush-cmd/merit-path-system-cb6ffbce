@@ -5,18 +5,38 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function StudentPaymentPage() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<{ class: number | null; profile_completed: boolean | null } | null>(null);
+  const [profile, setProfile] = useState<{ class: number | null; profile_completed: boolean | null; full_name: string | null; mobile: string | null; email: string | null } | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  useEffect(() => {
+    // Load Razorpay script
+    if (!document.getElementById('razorpay-script')) {
+      const script = document.createElement('script');
+      script.id = 'razorpay-script';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => setScriptLoaded(true);
+      document.body.appendChild(script);
+    } else {
+      setScriptLoaded(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('class, profile_completed')
+        .select('class, profile_completed, full_name, mobile, email')
         .eq('user_id', user.id)
         .maybeSingle();
       setProfile(profileData);
@@ -45,46 +65,82 @@ export default function StudentPaymentPage() {
 
   const handlePayment = async () => {
     if (!user || !profile?.profile_completed) {
-      toast.error('Please complete your profile first');
+      toast.error('कृपया पहले अपनी प्रोफ़ाइल पूरी करें');
+      return;
+    }
+
+    if (!scriptLoaded) {
+      toast.error('Payment gateway लोड हो रहा है, कृपया थोड़ा इंतज़ार करें');
       return;
     }
 
     setLoading(true);
     try {
-      // Create payment order record
-      const { data: order, error } = await supabase
-        .from('payment_orders')
-        .insert({
-          user_id: user.id,
-          order_type: 'exam_fee',
-          amount: fee,
-          status: 'pending',
-        })
-        .select()
-        .single();
+      // Step 1: Create Razorpay order via edge function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke(
+        'razorpay-create-order',
+        {
+          body: { amount: fee, order_type: 'exam_fee' },
+        }
+      );
 
-      if (error) throw error;
+      if (orderError) throw new Error(orderError.message);
+      if (orderData?.error) throw new Error(orderData.error);
 
-      // For now, simulate payment verification (Razorpay integration needs API key setup)
-      // In production, this would open Razorpay modal
-      toast.info('Payment gateway integration requires Razorpay API keys. Simulating payment for demo.');
+      // Step 2: Open Razorpay checkout
+      const options = {
+        key: orderData.key_id,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'GPHDM EXAMS',
+        description: 'Exam Fee Payment',
+        order_id: orderData.razorpay_order_id,
+        prefill: {
+          name: profile?.full_name ?? '',
+          email: profile?.email ?? user.email ?? '',
+          contact: profile?.mobile ?? '',
+        },
+        theme: { color: '#10b981' },
+        handler: async (response: any) => {
+          // Step 3: Verify payment
+          try {
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+              'razorpay-verify-payment',
+              {
+                body: {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  db_order_id: orderData.db_order_id,
+                },
+              }
+            );
 
-      // Simulate successful payment
-      const { error: updateError } = await supabase
-        .from('payment_orders')
-        .update({
-          status: 'verified',
-          razorpay_payment_id: `sim_${Date.now()}`,
-        })
-        .eq('id', order.id);
+            if (verifyError) throw new Error(verifyError.message);
+            if (verifyData?.error) throw new Error(verifyData.error);
 
-      if (updateError) throw updateError;
+            setPaymentStatus('verified');
+            toast.success('Payment verified successfully! ✅');
+          } catch (err: any) {
+            toast.error(err?.message ?? 'Payment verification failed');
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            toast.info('Payment cancelled');
+          },
+        },
+      };
 
-      setPaymentStatus('verified');
-      toast.success('Payment verified successfully!');
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (response: any) => {
+        toast.error(`Payment failed: ${response.error.description}`);
+        setLoading(false);
+      });
+      rzp.open();
     } catch (error: any) {
       toast.error(error?.message ?? 'Payment failed');
-    } finally {
       setLoading(false);
     }
   };
