@@ -89,6 +89,7 @@ const App = () => (
 
             {/* Super Admin */}
             <Route path="/super-admin" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
+            <Route path="/super-admin/admins" element={<RoleGuard allowedRoles={['super_admin']}><ManageAdminsPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />
