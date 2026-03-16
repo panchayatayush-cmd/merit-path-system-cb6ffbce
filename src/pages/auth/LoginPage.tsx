@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,21 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, role } = useAuth();
+  const { signIn, user, role } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect after role is loaded
+  useEffect(() => {
+    if (user && role) {
+      const dashboardMap: Record<string, string> = {
+        student: '/student',
+        center: '/center',
+        admin: '/admin',
+        super_admin: '/super-admin',
+      };
+      navigate(dashboardMap[role] ?? '/', { replace: true });
+    }
+  }, [user, role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,25 +33,12 @@ export default function LoginPage() {
       const { error } = await signIn(email, password);
       if (error) throw error;
       toast.success('Login successful');
-      // Role-based redirect handled by useEffect below
     } catch (error: any) {
       toast.error(error?.message ?? 'Login failed');
     } finally {
       setLoading(false);
     }
   };
-
-  // Redirect after role is loaded
-  const { user } = useAuth();
-  if (user && role) {
-    const dashboardMap: Record<string, string> = {
-      student: '/student',
-      center: '/center',
-      admin: '/admin',
-      super_admin: '/super-admin',
-    };
-    navigate(dashboardMap[role] ?? '/', { replace: true });
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4">
