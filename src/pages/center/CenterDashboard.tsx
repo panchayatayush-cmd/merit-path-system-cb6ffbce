@@ -67,25 +67,6 @@ export default function CenterDashboard() {
           ))}
         </div>
 
-        {/* Referral info */}
-        <div className="card-shadow rounded-lg bg-card p-6">
-          <h3 className="text-sm font-medium text-foreground mb-2">📋 Referral System</h3>
-          <p className="text-sm text-muted-foreground">
-            जब कोई student आपके Center Code (<span className="font-mono font-medium text-foreground">{center?.center_code ?? '...'}</span>) से register करके exam fee pay करता है, तो आपको <span className="font-medium text-primary">₹40</span> referral income मिलता है।
-          </p>
-        </div>
-
-        {/* Commission Distribution */}
-        <div className="card-shadow rounded-lg bg-card p-4">
-          <h2 className="text-sm font-semibold text-foreground mb-2">💰 Commission Distribution (₹300 per exam)</h2>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="text-muted-foreground">Referring Student: <span className="font-semibold text-foreground">₹70</span></div>
-            <div className="text-muted-foreground">Center: <span className="font-semibold text-primary">₹40</span></div>
-            <div className="text-muted-foreground">Admin: <span className="font-semibold text-foreground">₹30</span></div>
-            <div className="text-muted-foreground">Super Admin: <span className="font-semibold text-foreground">₹60</span></div>
-            <div className="text-muted-foreground col-span-2">Scholarship Fund: <span className="font-semibold text-foreground">₹100</span></div>
-          </div>
-        </div>
 
         {!center?.payment_verified && (
           <div className="card-shadow rounded-lg bg-card p-6 border-l-4 border-destructive">

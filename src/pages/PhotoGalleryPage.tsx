@@ -1,21 +1,28 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import gphdmLogo from '@/assets/gphdm-logo.jpg';
 
-const galleryItems = [
-  { title: 'Scholarship Examination 2025', desc: 'Students appearing for the national scholarship exam across multiple centers.', color: 'bg-primary/10' },
-  { title: 'Prize Distribution Ceremony', desc: 'Top rank holders receiving their scholarship prizes and certificates.', color: 'bg-accent/10' },
-  { title: 'Center Registration Drive', desc: 'New partner centers joining the GPHDM network across Uttar Pradesh.', color: 'bg-warning/10' },
-  { title: 'Community Outreach Program', desc: 'Reaching students in rural areas through Gram Panchayat networks.', color: 'bg-success/10' },
-  { title: 'Certificate Verification Event', desc: 'Demonstrating QR-based certificate verification at educational fairs.', color: 'bg-info/10' },
-  { title: 'Student Referral Campaign', desc: 'Top referrers being recognized for helping grow the scholarship community.', color: 'bg-destructive/10' },
-  { title: 'Annual Review Meeting', desc: 'Team reviewing scholarship distribution and planning for 2026.', color: 'bg-primary/10' },
-  { title: 'Digital Literacy Workshop', desc: 'Training students on using the online examination platform.', color: 'bg-accent/10' },
-  { title: 'Partner Center Inauguration', desc: 'Opening ceremony of new GPHDM examination centers in Bihar.', color: 'bg-warning/10' },
-];
+interface GalleryPhoto {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string;
+}
 
 export default function PhotoGalleryPage() {
+  const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('gallery_photos')
+      .select('id, title, description, image_url')
+      .order('display_order', { ascending: true })
+      .then(({ data }) => setPhotos((data as GalleryPhoto[]) ?? []));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -43,22 +50,24 @@ export default function PhotoGalleryPage() {
 
       {/* Gallery Grid */}
       <section className="max-w-6xl mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {galleryItems.map((item, i) => (
-            <div key={i} className="card-shadow rounded-xl bg-card overflow-hidden group">
-              <div className={`aspect-[4/3] ${item.color} flex items-center justify-center`}>
-                <ImageIcon className="h-12 w-12 text-muted-foreground/30" />
+        {photos.length === 0 ? (
+          <div className="text-center py-12">
+            <ImageIcon className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">Photos will be added soon. Stay tuned!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {photos.map((photo) => (
+              <div key={photo.id} className="card-shadow rounded-xl bg-card overflow-hidden group">
+                <img src={photo.image_url} alt={photo.title} className="w-full aspect-[4/3] object-cover" />
+                <div className="p-4">
+                  <h3 className="text-sm font-semibold text-foreground mb-1">{photo.title}</h3>
+                  {photo.description && <p className="text-xs text-muted-foreground leading-relaxed">{photo.description}</p>}
+                </div>
               </div>
-              <div className="p-4">
-                <h3 className="text-sm font-semibold text-foreground mb-1">{item.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-10 text-center">
-          <p className="text-xs text-muted-foreground">More photos will be added as events take place. Stay tuned!</p>
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Footer */}

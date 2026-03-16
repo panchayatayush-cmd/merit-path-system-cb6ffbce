@@ -56,17 +56,6 @@ export default function SuperAdminDashboard() {
           ))}
         </div>
 
-        {/* Commission Distribution */}
-        <div className="card-shadow rounded-lg bg-card p-4">
-          <h2 className="text-sm font-semibold text-foreground mb-2">💰 Commission Distribution (₹300 per exam)</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 text-sm">
-            <div className="text-muted-foreground">Referring Student: <span className="font-semibold text-foreground">₹70</span></div>
-            <div className="text-muted-foreground">Center: <span className="font-semibold text-foreground">₹40</span></div>
-            <div className="text-muted-foreground">Admin: <span className="font-semibold text-foreground">₹30</span></div>
-            <div className="text-muted-foreground">Super Admin: <span className="font-semibold text-primary">₹60</span></div>
-            <div className="text-muted-foreground">Scholarship: <span className="font-semibold text-foreground">₹100</span></div>
-          </div>
-        </div>
 
         {/* Scholarship Distribution Structure */}
         <div className="card-shadow rounded-lg bg-card p-4">
