@@ -106,6 +106,12 @@ serve(async (req) => {
       .single();
 
     if (studentWallet) {
+      const { data: currentWallet } = await serviceClient
+        .from("wallets")
+        .select("balance")
+        .eq("id", studentWallet.id)
+        .single();
+      
       await serviceClient.from("wallet_transactions").insert({
         wallet_id: studentWallet.id,
         amount: 50,
@@ -114,10 +120,8 @@ serve(async (req) => {
       });
       await serviceClient
         .from("wallets")
-        .update({ balance: studentWallet.id ? 50 : 0 })
+        .update({ balance: Number(currentWallet?.balance ?? 0) + 50 })
         .eq("id", studentWallet.id);
-      // Actually we need to increment, let's use rpc or raw update
-      await serviceClient.rpc("increment_wallet_balance" as any, { wallet_id_input: studentWallet.id, amount_input: 50 });
     }
 
     // Credit center wallet if center_code exists
