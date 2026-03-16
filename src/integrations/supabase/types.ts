@@ -411,6 +411,99 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_templates: {
+        Row: {
+          created_at: string
+          days_before_exam: number
+          id: string
+          is_active: boolean
+          message: string
+          template_name: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          days_before_exam?: number
+          id?: string
+          is_active?: boolean
+          message: string
+          template_name: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          days_before_exam?: number
+          id?: string
+          is_active?: boolean
+          message?: string
+          template_name?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          channel: string
+          created_at: string
+          delivery_status: string
+          id: string
+          is_read: boolean
+          message: string
+          read_at: string | null
+          scheduled_exam_id: string | null
+          sent_at: string
+          template_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          delivery_status?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          read_at?: string | null
+          scheduled_exam_id?: string | null
+          sent_at?: string
+          template_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          delivery_status?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          read_at?: string | null
+          scheduled_exam_id?: string | null
+          sent_at?: string
+          template_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_scheduled_exam_id_fkey"
+            columns: ["scheduled_exam_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "notification_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_orders: {
         Row: {
           amount: number
