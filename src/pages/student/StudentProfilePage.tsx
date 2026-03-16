@@ -148,10 +148,9 @@ export default function StudentProfilePage() {
         .from('centers')
         .select('id')
         .eq('center_code', form.center_code.toUpperCase())
-        .eq('is_active', true)
         .maybeSingle();
       if (!center) {
-        toast.error('Invalid or inactive center code');
+        toast.error('Invalid center code. Please enter a valid center code.');
         return;
       }
     }
