@@ -32,16 +32,24 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const { error } = await signUp(email, password);
-      if (error) throw error;
+      // Sign up – with auto-confirm this returns a session immediately
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: window.location.origin },
+      });
+      if (signUpError) throw signUpError;
 
-      // Get the new user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Registration failed');
+      // Wait briefly for session to propagate
+      await new Promise((r) => setTimeout(r, 500));
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error('Registration failed – no session');
+      const userId = session.user.id;
 
       // Assign role
       const { error: roleError } = await supabase.from('user_roles').insert({
-        user_id: user.id,
+        user_id: userId,
         role: role,
       });
       if (roleError) throw roleError;
@@ -50,9 +58,9 @@ export default function RegisterPage() {
       if (role === 'center') {
         const { data: codeData } = await supabase.rpc('generate_center_code');
         const centerCode = codeData ?? `CTR${Math.floor(1000 + Math.random() * 9000)}`;
-        
+
         const { error: centerError } = await supabase.from('centers').insert({
-          user_id: user.id,
+          user_id: userId,
           center_name: centerName,
           center_code: centerCode,
           email: email,
@@ -62,7 +70,7 @@ export default function RegisterPage() {
 
       // Create wallet
       await supabase.from('wallets').insert({
-        user_id: user.id,
+        user_id: userId,
         role: role,
         balance: 0,
       });
