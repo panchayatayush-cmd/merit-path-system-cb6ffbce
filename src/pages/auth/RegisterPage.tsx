@@ -73,6 +73,14 @@ export default function RegisterPage() {
         balance: 0,
       });
 
+      // If student with referral code, save it
+      if (role === 'student' && referralCode.trim()) {
+        await supabase
+          .from('profiles')
+          .update({ referred_by: referralCode.trim().toUpperCase() } as any)
+          .eq('user_id', userId);
+      }
+
       // Refresh role in AuthContext so RoleGuard works
       await refreshRole();
 
