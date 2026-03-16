@@ -235,8 +235,7 @@ export default function StudentProfilePage() {
       )}
     </div>
   );
-
-
+  const initials = form.full_name
     ? form.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
