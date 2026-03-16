@@ -7,15 +7,8 @@ import {
 } from 'lucide-react';
 import gphdmLogo from '@/assets/gphdm-logo.jpg';
 
-const scholarshipTiers = [
-  { rank: 'Rank 1', prize: '₹10,000', category: 'TOP RANK', highlight: true },
-  { rank: 'Rank 2', prize: '₹7,000', category: 'TOP RANK', highlight: true },
-  { rank: 'Rank 3', prize: '₹5,000', category: 'TOP RANK', highlight: true },
-  { rank: 'Rank 4–10', prize: '₹2,500/student', category: 'ELITE RANK', students: 7, total: '₹17,500' },
-  { rank: 'Rank 11–25', prize: '₹1,500/student', category: 'ADVANCED RANK', students: 15, total: '₹22,500' },
-  { rank: 'Rank 26–50', prize: '₹820/student', category: 'MERIT RANK', students: 25, total: '₹20,500' },
-  { rank: 'Rank 51–100', prize: '₹350/student', category: 'PARTICIPATION', students: 50, total: '₹17,500' },
-];
+
+
 
 const features = [
   { icon: <BookOpen className="h-5 w-5" />, title: 'Class 1–12 Coverage', desc: 'Comprehensive examination for all school levels with age-appropriate questions.' },
@@ -321,45 +314,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Scholarship Prize Distribution */}
-      <section className="border-t border-border">
-        <div className="max-w-6xl mx-auto px-4 py-16">
-          <div className="flex items-center gap-2 mb-2">
-            <Trophy className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-bold text-foreground tracking-tight">Scholarship Prize Distribution</h3>
-          </div>
-          <p className="text-sm text-muted-foreground mb-8">
-            Total Pool: ₹1,00,000 (from 1000 students × ₹100). Top 100 students win!
-          </p>
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-3">
-              {scholarshipTiers.filter(t => t.highlight).map((tier) => (
-                <div key={tier.rank} className="card-shadow rounded-lg bg-primary/5 border border-primary/20 p-4 text-center">
-                  <p className="text-xs font-semibold text-primary uppercase">{tier.rank}</p>
-                  <p className="text-xl font-bold tabular-nums text-foreground mt-1">{tier.prize}</p>
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {scholarshipTiers.filter(t => !t.highlight).map((tier) => (
-                <div key={tier.rank} className="card-shadow rounded-lg bg-card p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{tier.rank}</p>
-                    <p className="text-xs text-muted-foreground">{tier.category} • {tier.students} students</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold tabular-nums text-foreground">{tier.prize}</p>
-                    <p className="text-xs text-muted-foreground">Total: {tier.total}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="card-shadow rounded-lg bg-card p-4 text-center border-2 border-primary/30">
-              <p className="text-sm font-bold text-foreground">Grand Total: <span className="text-primary">₹1,00,000</span></p>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* FAQ */}
       <section className="border-t border-border">
