@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import NotificationBell from '@/components/NotificationBell';
 import {
   LayoutDashboard,
   User,
@@ -18,6 +19,7 @@ import {
   ArrowDownToLine,
   Sparkles,
   Calendar,
+  Bell,
 } from 'lucide-react';
 
 interface NavItem {
@@ -60,6 +62,7 @@ const superAdminNav: NavItem[] = [
   { label: 'Syllabus', href: '/super-admin/syllabus', icon: <BookOpen className="h-4 w-4" /> },
   { label: 'AI Exam', href: '/super-admin/ai-exam', icon: <Sparkles className="h-4 w-4" /> },
   { label: 'Scheduler', href: '/super-admin/exam-scheduler', icon: <Calendar className="h-4 w-4" /> },
+  { label: 'Notifications', href: '/super-admin/notifications', icon: <Bell className="h-4 w-4" /> },
   { label: 'Payments', href: '/super-admin/payments', icon: <CreditCard className="h-4 w-4" /> },
   { label: 'Wallets', href: '/super-admin/wallets', icon: <Wallet className="h-4 w-4" /> },
   { label: 'Withdrawals', href: '/super-admin/withdrawals', icon: <ArrowDownToLine className="h-4 w-4" /> },
@@ -95,9 +98,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex min-h-screen bg-secondary/30">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex w-60 flex-col bg-sidebar border-r border-sidebar-border">
-        <div className="p-4 border-b border-sidebar-border">
-          <h2 className="text-sm font-semibold text-sidebar-foreground">Scholarship Exam</h2>
-          <p className="text-xs text-sidebar-foreground/60 mt-0.5">{roleLabel[role ?? ''] ?? ''}</p>
+        <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-sidebar-foreground">Scholarship Exam</h2>
+            <p className="text-xs text-sidebar-foreground/60 mt-0.5">{roleLabel[role ?? ''] ?? ''}</p>
+          </div>
+          <NotificationBell />
         </div>
         <nav className="flex-1 p-2 space-y-0.5">
           {navItems.map((item) => {
@@ -137,9 +143,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Mobile header */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border">
           <h2 className="text-sm font-semibold text-foreground">Scholarship Exam</h2>
-          <button onClick={signOut} className="text-sm text-muted-foreground hover:text-foreground">
-            Sign Out
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <button onClick={signOut} className="text-sm text-muted-foreground hover:text-foreground">
+              Sign Out
+            </button>
+          </div>
         </header>
 
         {/* Content */}
