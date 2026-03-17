@@ -20,10 +20,11 @@ serve(async (req) => {
     if (!lovableKey) throw new Error("LOVABLE_API_KEY not configured");
 
     // Verify super_admin
+    const token = authHeader.replace("Bearer ", "");
     const userClient = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    const { data: { user }, error: authError } = await userClient.auth.getUser(token);
     if (authError || !user) throw new Error("Unauthorized");
 
     const adminClient = createClient(supabaseUrl, serviceKey);

@@ -20,6 +20,7 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization header");
+    const token = authHeader.replace("Bearer ", "");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -27,7 +28,7 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) throw new Error("Unauthorized");
 
     const { amount, order_type } = await req.json();
