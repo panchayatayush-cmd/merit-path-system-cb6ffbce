@@ -37,6 +37,7 @@ const studentNav: NavItem[] = [
   { label: 'Results', href: '/student/results', icon: <FileText className="h-4 w-4" /> },
   { label: 'Certificate', href: '/student/certificate', icon: <Award className="h-4 w-4" /> },
   { label: 'Wallet', href: '/student/wallet', icon: <Wallet className="h-4 w-4" /> },
+  { label: 'AI Helper', href: '/student/chat', icon: <MessageCircle className="h-4 w-4" /> },
 ];
 
 const centerNav: NavItem[] = [

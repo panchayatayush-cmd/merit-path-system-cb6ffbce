@@ -81,6 +81,7 @@ const App = () => (
             <Route path="/student/results" element={<RoleGuard allowedRoles={['student']}><StudentResultsPage /></RoleGuard>} />
             <Route path="/student/certificate" element={<RoleGuard allowedRoles={['student']}><StudentCertificatePage /></RoleGuard>} />
             <Route path="/student/wallet" element={<RoleGuard allowedRoles={['student']}><StudentWalletPage /></RoleGuard>} />
+            <Route path="/student/chat" element={<RoleGuard allowedRoles={['student']}><StudentChatPage /></RoleGuard>} />
 
             {/* Center */}
             <Route path="/center" element={<RoleGuard allowedRoles={['center']}><CenterDashboard /></RoleGuard>} />
