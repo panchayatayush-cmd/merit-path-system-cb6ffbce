@@ -265,7 +265,7 @@ serve(async (req) => {
 
     // 5. Scholarship fund ₹100
     await serviceClient.from("scholarship_fund").insert({
-      amount: COMMISSION.SCHOLARSHIP,
+      amount: EXAM_COMMISSION.SCHOLARSHIP,
       source: "exam_fee",
       payment_order_id: db_order_id,
     });
