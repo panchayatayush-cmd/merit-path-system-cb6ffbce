@@ -29,13 +29,19 @@ async function verifySignature(
   return expectedSignature === signature;
 }
 
-// Commission amounts (₹300 total)
-const COMMISSION = {
+// Commission amounts (₹300 total for exam fee)
+const EXAM_COMMISSION = {
   REFERRER: 70,
   CENTER: 40,
   ADMIN: 30,
   SUPER_ADMIN: 60,
   SCHOLARSHIP: 100,
+};
+
+// Commission amounts for center registration (₹500 total)
+const CENTER_REG_COMMISSION = {
+  ADMIN: 200,
+  SUPER_ADMIN: 300,
 };
 
 serve(async (req) => {
