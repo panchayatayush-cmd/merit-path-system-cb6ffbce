@@ -112,6 +112,7 @@ const App = () => (
             <Route path="/super-admin/ai-exam" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminAIExamPage /></RoleGuard>} />
             <Route path="/super-admin/exam-scheduler" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminExamSchedulerPage /></RoleGuard>} />
             <Route path="/super-admin/notifications" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminNotificationsPage /></RoleGuard>} />
+            <Route path="/super-admin/center-approvals" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminCenterApprovalsPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />
