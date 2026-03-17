@@ -29,9 +29,10 @@ export default function SuperAdminWithdrawalsPage() {
 
     const userIds = [...new Set(reqs.map(r => r.user_id))];
     if (userIds.length > 0) {
-      const [{ data: profs }, { data: ctrs }] = await Promise.all([
+      const [{ data: profs }, { data: ctrs }, { data: uroles }] = await Promise.all([
         supabase.from('profiles').select('user_id, full_name, mobile').in('user_id', userIds),
         supabase.from('centers').select('user_id, center_name, center_code').in('user_id', userIds),
+        supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
       ]);
       const profMap: Record<string, any> = {};
       (profs ?? []).forEach(p => { profMap[p.user_id] = p; });
@@ -39,6 +40,9 @@ export default function SuperAdminWithdrawalsPage() {
       const ctrMap: Record<string, any> = {};
       (ctrs ?? []).forEach(c => { ctrMap[c.user_id] = c; });
       setCenters(ctrMap);
+      const roleMap: Record<string, string> = {};
+      (uroles ?? []).forEach((r: any) => { roleMap[r.user_id] = r.role; });
+      setRoles(roleMap);
     }
     setLoading(false);
   };
