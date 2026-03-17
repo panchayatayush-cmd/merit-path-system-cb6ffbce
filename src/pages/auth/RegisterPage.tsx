@@ -165,6 +165,8 @@ export default function RegisterPage() {
     if (password !== confirmPassword) { toast.error('Passwords do not match'); return; }
     if (password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     if (!adminCodeValid) { toast.error('Please enter a valid Admin Code'); return; }
+    if (mobile.length !== 10) { toast.error('Mobile number must be 10 digits'); return; }
+    if (pincode.length !== 6) { toast.error('Pincode must be 6 digits'); return; }
     if (!scriptLoaded) { toast.error('Payment gateway loading, please wait...'); return; }
 
     setLoading(true);
