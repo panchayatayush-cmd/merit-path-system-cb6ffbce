@@ -13,6 +13,7 @@ export default function SuperAdminWithdrawalsPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [centers, setCenters] = useState<Record<string, any>>({});
+  const [roles, setRoles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState<string | null>(null);
