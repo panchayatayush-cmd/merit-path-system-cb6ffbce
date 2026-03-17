@@ -59,12 +59,27 @@ export default function RegisterPage() {
         const { data: codeData } = await supabase.rpc('generate_center_code');
         const centerCode = codeData ?? `CTR${Math.floor(1000 + Math.random() * 9000)}`;
 
+        // Look up the admin who owns the provided admin center code
+        let adminId: string | null = null;
+        if (adminCenterCode.trim()) {
+          const { data: adminCenter } = await supabase
+            .from('centers')
+            .select('user_id')
+            .eq('center_code', adminCenterCode.trim().toUpperCase())
+            .maybeSingle();
+          // If the code belongs to an admin, store their user_id
+          if (adminCenter) {
+            adminId = adminCenter.user_id;
+          }
+        }
+
         const { error: centerError } = await supabase.from('centers').insert({
           user_id: userId,
           center_name: centerName,
           center_code: centerCode,
           email: email,
-        });
+          admin_id: adminId,
+        } as any);
         if (centerError) throw centerError;
       }
 
