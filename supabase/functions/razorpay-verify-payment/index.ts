@@ -182,7 +182,7 @@ serve(async (req) => {
         .single();
 
       if (referrerProfile) {
-        await creditWallet(serviceClient, referrerProfile.user_id, "student", COMMISSION.REFERRER, "Referral commission - student referred");
+        await creditWallet(serviceClient, referrerProfile.user_id, "student", EXAM_COMMISSION.REFERRER, "Referral commission - student referred");
 
         await serviceClient.from("commissions").insert({
           student_id: referrerProfile.user_id,
