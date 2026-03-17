@@ -26,7 +26,6 @@ export default function AdminDashboard() {
         students: students.count ?? 0,
         centers: centers.count ?? 0,
         payments: payments.count ?? 0,
-        questions: questions.count ?? 0,
         earnings,
       });
     };
