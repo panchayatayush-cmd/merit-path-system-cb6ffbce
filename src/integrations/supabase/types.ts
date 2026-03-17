@@ -1141,6 +1141,7 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          admin_code: string | null
           created_at: string
           full_name: string | null
           id: string
@@ -1150,6 +1151,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_code?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
@@ -1159,6 +1161,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_code?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
@@ -1292,6 +1295,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_admin_code: { Args: never; Returns: string }
       generate_center_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_user_role: {
@@ -1304,6 +1308,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      validate_admin_code: {
+        Args: { _code: string }
+        Returns: {
+          admin_name: string
+          admin_user_id: string
+          is_valid: boolean
+        }[]
       }
       validate_center_code: { Args: { _code: string }; Returns: boolean }
       validate_referral_code: { Args: { _code: string }; Returns: boolean }

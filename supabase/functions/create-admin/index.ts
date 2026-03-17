@@ -54,9 +54,22 @@ serve(async (req) => {
       });
       if (createError) throw createError;
 
+      // Generate admin code for admin role
+      let adminCode: string | null = null;
+      if (role === "admin") {
+        const { data: codeData } = await serviceClient.rpc("generate_admin_code");
+        adminCode = codeData;
+      }
+
       const { error: roleError } = await serviceClient
         .from("user_roles")
-        .insert({ user_id: newUser.user.id, role, full_name: full_name || null, mobile: mobile || null });
+        .insert({
+          user_id: newUser.user.id,
+          role,
+          full_name: full_name || null,
+          mobile: mobile || null,
+          admin_code: adminCode,
+        });
       if (roleError) throw roleError;
 
       // Also update profiles table
@@ -66,7 +79,7 @@ serve(async (req) => {
         .eq("user_id", newUser.user.id);
 
       return new Response(
-        JSON.stringify({ success: true, user_id: newUser.user.id, email, role }),
+        JSON.stringify({ success: true, user_id: newUser.user.id, email, role, admin_code: adminCode }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -76,7 +89,6 @@ serve(async (req) => {
       const { user_id, full_name, email, mobile, password, is_disabled } = body;
       if (!user_id) throw new Error("Missing user_id");
 
-      // Update auth user if email or password changed
       const authUpdate: any = {};
       if (email) authUpdate.email = email;
       if (password) authUpdate.password = password;
@@ -89,7 +101,6 @@ serve(async (req) => {
         if (authErr) throw authErr;
       }
 
-      // Update user_roles
       const roleUpdate: any = {};
       if (full_name !== undefined) roleUpdate.full_name = full_name || null;
       if (mobile !== undefined) roleUpdate.mobile = mobile || null;
@@ -103,7 +114,6 @@ serve(async (req) => {
           .in("role", ["admin", "super_admin"]);
       }
 
-      // Update profiles
       const profileUpdate: any = {};
       if (full_name !== undefined) profileUpdate.full_name = full_name || null;
       if (email) profileUpdate.email = email;
@@ -118,11 +128,11 @@ serve(async (req) => {
       );
     }
 
-    // LIST ADMINS (with email from auth)
+    // LIST ADMINS (with email from auth + admin_code)
     if (action === "list") {
       const { data: roles } = await serviceClient
         .from("user_roles")
-        .select("user_id, role, created_at, is_disabled, full_name, mobile")
+        .select("user_id, role, created_at, is_disabled, full_name, mobile, admin_code")
         .in("role", ["admin", "super_admin"])
         .order("created_at", { ascending: false });
 
