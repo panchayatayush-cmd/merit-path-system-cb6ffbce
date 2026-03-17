@@ -113,6 +113,7 @@ export type Database = {
           owner_state: string | null
           owner_tahsil: string | null
           owner_village: string | null
+          payment_utr: string | null
           payment_verified: boolean | null
           status: string
           updated_at: string
@@ -136,6 +137,7 @@ export type Database = {
           owner_state?: string | null
           owner_tahsil?: string | null
           owner_village?: string | null
+          payment_utr?: string | null
           payment_verified?: boolean | null
           status?: string
           updated_at?: string
@@ -159,6 +161,7 @@ export type Database = {
           owner_state?: string | null
           owner_tahsil?: string | null
           owner_village?: string | null
+          payment_utr?: string | null
           payment_verified?: boolean | null
           status?: string
           updated_at?: string
