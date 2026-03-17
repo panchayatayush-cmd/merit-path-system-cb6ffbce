@@ -158,9 +158,9 @@ export default function RegisterPage() {
         <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2026</p>
 
         {refFromUrl && (
-          <div className="mb-4 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-foreground">
-            <span className="font-medium text-success">✅ Referral link detected.</span>
-            <span className="ml-1">Your referral will be applied automatically.</span>
+          <div className="mb-4 rounded-md border border-emerald-400 bg-emerald-50 px-3 py-2.5 text-sm" style={{ color: '#065f46' }}>
+            <p className="font-semibold">✅ Referral link detected!</p>
+            <p className="mt-0.5">आपका referral अपने आप लागू हो जाएगा।</p>
           </div>
         )}
 
