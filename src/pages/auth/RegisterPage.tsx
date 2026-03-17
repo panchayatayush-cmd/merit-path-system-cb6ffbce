@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<RegisterRole>('student');
   const [centerName, setCenterName] = useState('');
+  const [adminCenterCode, setAdminCenterCode] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, refreshRole } = useAuth();
@@ -58,12 +59,27 @@ export default function RegisterPage() {
         const { data: codeData } = await supabase.rpc('generate_center_code');
         const centerCode = codeData ?? `CTR${Math.floor(1000 + Math.random() * 9000)}`;
 
+        // Look up the admin who owns the provided admin center code
+        let adminId: string | null = null;
+        if (adminCenterCode.trim()) {
+          const { data: adminCenter } = await supabase
+            .from('centers')
+            .select('user_id')
+            .eq('center_code', adminCenterCode.trim().toUpperCase())
+            .maybeSingle();
+          // If the code belongs to an admin, store their user_id
+          if (adminCenter) {
+            adminId = adminCenter.user_id;
+          }
+        }
+
         const { error: centerError } = await supabase.from('centers').insert({
           user_id: userId,
           center_name: centerName,
           center_code: centerCode,
           email: email,
-        });
+          admin_id: adminId,
+        } as any);
         if (centerError) throw centerError;
       }
 
@@ -131,15 +147,27 @@ export default function RegisterPage() {
           </div>
 
           {role === 'center' && (
-            <div>
-              <Label htmlFor="centerName">Center Name</Label>
-              <Input
-                id="centerName"
-                value={centerName}
-                onChange={(e) => setCenterName(e.target.value)}
-                required
-                placeholder="Enter center name"
-              />
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="centerName">Center Name</Label>
+                <Input
+                  id="centerName"
+                  value={centerName}
+                  onChange={(e) => setCenterName(e.target.value)}
+                  required
+                  placeholder="Enter center name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="adminCenterCode">Admin Center Code (Optional)</Label>
+                <Input
+                  id="adminCenterCode"
+                  value={adminCenterCode}
+                  onChange={(e) => setAdminCenterCode(e.target.value)}
+                  placeholder="Enter admin's center code"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Admin का Center Code डालें जिसने आपको register किया है।</p>
+              </div>
             </div>
           )}
 

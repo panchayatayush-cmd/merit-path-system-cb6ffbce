@@ -29,13 +29,19 @@ async function verifySignature(
   return expectedSignature === signature;
 }
 
-// Commission amounts (₹300 total)
-const COMMISSION = {
+// Commission amounts (₹300 total for exam fee)
+const EXAM_COMMISSION = {
   REFERRER: 70,
   CENTER: 40,
   ADMIN: 30,
   SUPER_ADMIN: 60,
   SCHOLARSHIP: 100,
+};
+
+// Commission amounts for center registration (₹500 total)
+const CENTER_REG_COMMISSION = {
+  ADMIN: 200,
+  SUPER_ADMIN: 300,
 };
 
 serve(async (req) => {
@@ -106,15 +112,54 @@ serve(async (req) => {
 
     const orderType = updatedOrder?.order_type;
 
-    // If center registration, activate center
+    // If center registration, activate center AND distribute ₹500
     if (orderType === "center_registration") {
-      await serviceClient
+      // Activate center
+      const { data: centerData } = await serviceClient
         .from("centers")
         .update({ is_active: true, payment_verified: true })
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .select("admin_id, center_code")
+        .single();
+
+      // 1. Credit ADMIN ₹200 (the admin whose code was used)
+      if (centerData?.admin_id) {
+        await creditWallet(serviceClient, centerData.admin_id, "admin", CENTER_REG_COMMISSION.ADMIN, "Center registration commission - ₹200");
+
+        await serviceClient.from("commissions").insert({
+          student_id: user.id,
+          center_code: centerData.center_code,
+          payment_id: db_order_id,
+          role: "admin",
+          commission_amount: CENTER_REG_COMMISSION.ADMIN,
+          description: "Admin commission from center owner registration fee",
+        });
+      }
+
+      // 2. Credit SUPER ADMIN ₹300
+      const { data: superAdminRoles } = await serviceClient
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "super_admin");
+
+      if (superAdminRoles && superAdminRoles.length > 0) {
+        const perSA = CENTER_REG_COMMISSION.SUPER_ADMIN / superAdminRoles.length;
+        for (const sa of superAdminRoles) {
+          await creditWallet(serviceClient, sa.user_id, "super_admin", perSA, "Center registration share - ₹300");
+
+          await serviceClient.from("commissions").insert({
+            student_id: user.id,
+            center_code: centerData?.center_code ?? null,
+            payment_id: db_order_id,
+            role: "super_admin",
+            commission_amount: perSA,
+            description: "Super Admin share from center owner registration fee",
+          });
+        }
+      }
 
       return new Response(
-        JSON.stringify({ success: true, message: "Center payment verified and activated" }),
+        JSON.stringify({ success: true, message: "Center payment verified, activated, and commissions distributed" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -137,7 +182,7 @@ serve(async (req) => {
         .single();
 
       if (referrerProfile) {
-        await creditWallet(serviceClient, referrerProfile.user_id, "student", COMMISSION.REFERRER, "Referral commission - student referred");
+        await creditWallet(serviceClient, referrerProfile.user_id, "student", EXAM_COMMISSION.REFERRER, "Referral commission - student referred");
 
         await serviceClient.from("commissions").insert({
           student_id: referrerProfile.user_id,
@@ -145,7 +190,7 @@ serve(async (req) => {
           center_code: profile.center_code,
           payment_id: db_order_id,
           role: "referrer",
-          commission_amount: COMMISSION.REFERRER,
+          commission_amount: EXAM_COMMISSION.REFERRER,
           description: "Referral commission from student exam fee",
         });
       }
@@ -160,7 +205,7 @@ serve(async (req) => {
         .single();
 
       if (center) {
-        await creditWallet(serviceClient, center.user_id, "center", COMMISSION.CENTER, "Student exam fee commission");
+        await creditWallet(serviceClient, center.user_id, "center", EXAM_COMMISSION.CENTER, "Student exam fee commission");
 
         await serviceClient.from("commissions").insert({
           student_id: user.id,
@@ -168,7 +213,7 @@ serve(async (req) => {
           center_code: profile.center_code,
           payment_id: db_order_id,
           role: "center",
-          commission_amount: COMMISSION.CENTER,
+          commission_amount: EXAM_COMMISSION.CENTER,
           description: "Center commission from student exam fee",
         });
       }
@@ -181,7 +226,7 @@ serve(async (req) => {
       .eq("role", "admin");
 
     if (adminRoles && adminRoles.length > 0) {
-      const perAdmin = COMMISSION.ADMIN / adminRoles.length;
+      const perAdmin = EXAM_COMMISSION.ADMIN / adminRoles.length;
       for (const admin of adminRoles) {
         await creditWallet(serviceClient, admin.user_id, "admin", perAdmin, "Admin commission from exam fee");
 
@@ -203,7 +248,7 @@ serve(async (req) => {
       .eq("role", "super_admin");
 
     if (superAdminRoles && superAdminRoles.length > 0) {
-      const perSuperAdmin = COMMISSION.SUPER_ADMIN / superAdminRoles.length;
+      const perSuperAdmin = EXAM_COMMISSION.SUPER_ADMIN / superAdminRoles.length;
       for (const sa of superAdminRoles) {
         await creditWallet(serviceClient, sa.user_id, "super_admin", perSuperAdmin, "Super Admin commission from exam fee");
 
@@ -220,7 +265,7 @@ serve(async (req) => {
 
     // 5. Scholarship fund ₹100
     await serviceClient.from("scholarship_fund").insert({
-      amount: COMMISSION.SCHOLARSHIP,
+      amount: EXAM_COMMISSION.SCHOLARSHIP,
       source: "exam_fee",
       payment_order_id: db_order_id,
     });
