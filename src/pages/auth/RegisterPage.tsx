@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 type RegisterRole = 'student' | 'center';
 
 export default function RegisterPage() {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,6 +24,19 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { signUp, refreshRole } = useAuth();
   const navigate = useNavigate();
+
+  // Auto-detect referral codes from URL params
+  const refFromUrl = searchParams.get('ref') ?? '';
+  const centerFromUrl = searchParams.get('center') ?? '';
+
+  useEffect(() => {
+    if (refFromUrl) {
+      setStudentReferralCode(refFromUrl);
+    }
+    if (centerFromUrl) {
+      setStudentCenterCode(centerFromUrl);
+    }
+  }, [refFromUrl, centerFromUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,15 +147,11 @@ export default function RegisterPage() {
         balance: 0,
       });
 
-      // For students: generate referral code + store center_code & referred_by
+      // For students: store center_code & referred_by (NO referral code generation - that happens after payment)
       if (role === 'student') {
-        const { data: newRefCode } = await supabase.rpc('generate_referral_code');
-        const generatedRefCode = newRefCode ?? `REF${Math.floor(100000 + Math.random() * 900000)}`;
-
         await supabase
           .from('profiles')
           .update({
-            referral_code: generatedRefCode,
             center_code: validatedCenterCode,
             referred_by: validatedReferredBy,
           })
@@ -228,20 +238,32 @@ export default function RegisterPage() {
                 <Input
                   id="studentCenterCode"
                   value={studentCenterCode}
-                  onChange={(e) => setStudentCenterCode(e.target.value)}
+                  onChange={(e) => !centerFromUrl && setStudentCenterCode(e.target.value)}
+                  readOnly={!!centerFromUrl}
                   placeholder="Enter center code"
+                  className={centerFromUrl ? 'bg-muted cursor-not-allowed' : ''}
                 />
-                <p className="text-xs text-muted-foreground mt-1">अगर आप किसी Center से जुड़े हैं तो उनका Center Code डालें।</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {centerFromUrl
+                    ? '✅ Center Code automatically applied from link.'
+                    : 'अगर आप किसी Center से जुड़े हैं तो उनका Center Code डालें।'}
+                </p>
               </div>
               <div>
                 <Label htmlFor="studentReferralCode">Student Referral Code (Optional)</Label>
                 <Input
                   id="studentReferralCode"
                   value={studentReferralCode}
-                  onChange={(e) => setStudentReferralCode(e.target.value)}
+                  onChange={(e) => !refFromUrl && setStudentReferralCode(e.target.value)}
+                  readOnly={!!refFromUrl}
                   placeholder="Enter student referral code"
+                  className={refFromUrl ? 'bg-muted cursor-not-allowed' : ''}
                 />
-                <p className="text-xs text-muted-foreground mt-1">किसी Student का Referral Code डालें अगर आपके पास है।</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {refFromUrl
+                    ? '✅ Referral Code automatically applied from link.'
+                    : 'किसी Student का Referral Code डालें अगर आपके पास है।'}
+                </p>
               </div>
             </div>
           )}
