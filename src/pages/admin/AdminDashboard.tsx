@@ -6,7 +6,7 @@ import { Users, Building2, CreditCard, Wallet } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ students: 0, centers: 0, payments: 0, questions: 0, earnings: 0 });
+  const [stats, setStats] = useState({ students: 0, centers: 0, payments: 0, earnings: 0 });
 
   useEffect(() => {
     const load = async () => {
