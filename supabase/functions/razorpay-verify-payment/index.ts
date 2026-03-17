@@ -205,7 +205,7 @@ serve(async (req) => {
         .single();
 
       if (center) {
-        await creditWallet(serviceClient, center.user_id, "center", COMMISSION.CENTER, "Student exam fee commission");
+        await creditWallet(serviceClient, center.user_id, "center", EXAM_COMMISSION.CENTER, "Student exam fee commission");
 
         await serviceClient.from("commissions").insert({
           student_id: user.id,
