@@ -2,3 +2,27 @@ project_id = "xhjchbvowughqcnlfkgt"
 
 [functions.student-chat]
 verify_jwt = false
+
+[functions.razorpay-verify-payment]
+verify_jwt = false
+
+[functions.razorpay-create-order]
+verify_jwt = false
+
+[functions.create-admin]
+verify_jwt = false
+
+[functions.generate-ai-questions]
+verify_jwt = false
+
+[functions.parse-syllabus-pdf]
+verify_jwt = false
+
+[functions.send-exam-notifications]
+verify_jwt = false
+
+[functions.auto-create-exam]
+verify_jwt = false
+
+[functions.seed-test-users]
+verify_jwt = false

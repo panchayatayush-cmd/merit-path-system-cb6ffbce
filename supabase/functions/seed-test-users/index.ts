@@ -13,12 +13,13 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Missing authorization header");
 
+    const token = authHeader.replace("Bearer ", "");
     const anonClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
-    const { data: { user: caller }, error: callerError } = await anonClient.auth.getUser();
+    const { data: { user: caller }, error: callerError } = await anonClient.auth.getUser(token);
     if (callerError || !caller) throw new Error("Unauthorized");
 
     const supabaseAdmin = createClient(

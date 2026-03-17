@@ -22,10 +22,11 @@ serve(async (req) => {
       const authHeader = req.headers.get("Authorization");
       if (authHeader) {
         const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const notifToken = authHeader.replace("Bearer ", "");
         const userClient = createClient(supabaseUrl, anonKey, {
           global: { headers: { Authorization: authHeader } },
         });
-        const { data: { user } } = await userClient.auth.getUser();
+        const { data: { user } } = await userClient.auth.getUser(notifToken);
         if (!user) throw new Error("Unauthorized");
         const { data: roleData } = await adminClient.from("user_roles").select("role").eq("user_id", user.id).maybeSingle();
         if (roleData?.role !== "super_admin") throw new Error("Only super admin");
