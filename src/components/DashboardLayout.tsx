@@ -37,6 +37,7 @@ const studentNav: NavItem[] = [
   { label: 'Dashboard', href: '/student', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Profile', href: '/student/profile', icon: <User className="h-4 w-4" /> },
   { label: 'Payment', href: '/student/payment', icon: <CreditCard className="h-4 w-4" /> },
+  { label: 'Syllabus', href: '/student/syllabus', icon: <BookOpen className="h-4 w-4" /> },
   { label: 'Exam', href: '/student/exam', icon: <BookOpen className="h-4 w-4" /> },
   { label: 'Results', href: '/student/results', icon: <FileText className="h-4 w-4" /> },
   { label: 'Certificate', href: '/student/certificate', icon: <Award className="h-4 w-4" /> },
