@@ -4,6 +4,8 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, XCircle, Clock } from 'lucide-react';
 
 export default function SuperAdminCenterApprovalsPage() {
   const [centers, setCenters] = useState<any[]>([]);
@@ -12,7 +14,7 @@ export default function SuperAdminCenterApprovalsPage() {
   const loadCenters = async () => {
     const { data } = await supabase
       .from('centers')
-      .select('id, center_name, owner_name, mobile, address, email, status, admin_id, center_code, payment_utr, created_at')
+      .select('id, center_name, owner_name, mobile, address, email, status, admin_id, center_code, payment_verified, created_at')
       .order('created_at', { ascending: false });
     setCenters(data ?? []);
   };
@@ -22,21 +24,21 @@ export default function SuperAdminCenterApprovalsPage() {
   const handleAction = async (id: string, action: 'approved' | 'rejected') => {
     setLoading(id);
     try {
-      const center = centers.find(c => c.id === id);
-
       if (action === 'approved') {
-        // Generate center code
-        const { data: code } = await supabase.rpc('generate_center_code');
+        const center = centers.find(c => c.id === id);
+        const needsCode = !center?.center_code || center.center_code === 'PENDING';
+        
+        let code = center?.center_code;
+        if (needsCode) {
+          const { data: generatedCode } = await supabase.rpc('generate_center_code');
+          code = generatedCode;
+        }
+
         const { error } = await supabase
           .from('centers')
-          .update({ status: 'approved', center_code: code, is_active: true, payment_verified: true })
+          .update({ status: 'approved', center_code: code, is_active: true })
           .eq('id', id);
         if (error) throw error;
-
-        // Distribute ₹200 to admin, ₹300 to super admin
-        if (center?.admin_id) {
-          await distributeRevenue(center.admin_id);
-        }
 
         toast.success(`Center approved! Code: ${code}`);
       } else {
@@ -52,39 +54,6 @@ export default function SuperAdminCenterApprovalsPage() {
       toast.error(err.message || 'Action failed');
     } finally {
       setLoading(null);
-    }
-  };
-
-  const distributeRevenue = async (adminId: string) => {
-    try {
-      // Credit admin ₹200
-      const { data: adminWallet } = await supabase
-        .from('wallets')
-        .select('id, balance')
-        .eq('user_id', adminId)
-        .eq('role', 'admin')
-        .single();
-
-      if (adminWallet) {
-        await supabase.from('wallets').update({ balance: Number(adminWallet.balance) + 200 }).eq('id', adminWallet.id);
-      }
-
-      // Credit super admin ₹300 - get current user (super admin)
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: saWallet } = await supabase
-          .from('wallets')
-          .select('id, balance')
-          .eq('user_id', user.id)
-          .eq('role', 'super_admin')
-          .single();
-
-        if (saWallet) {
-          await supabase.from('wallets').update({ balance: Number(saWallet.balance) + 300 }).eq('id', saWallet.id);
-        }
-      }
-    } catch (err) {
-      console.error('Revenue distribution error:', err);
     }
   };
 
@@ -104,7 +73,7 @@ export default function SuperAdminCenterApprovalsPage() {
               <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Owner</th>
               <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Phone</th>
               <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Address</th>
-              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">UTR</th>
+              <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment</th>
               <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
               <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Code</th>
               {showActions && <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>}
@@ -120,10 +89,16 @@ export default function SuperAdminCenterApprovalsPage() {
                   <td className="px-4 py-3">{c.owner_name || '-'}</td>
                   <td className="px-4 py-3">{c.mobile || '-'}</td>
                   <td className="px-4 py-3 max-w-[150px] truncate">{c.address || '-'}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{c.payment_utr || '-'}</td>
+                  <td className="px-4 py-3">
+                    {c.payment_verified ? (
+                      <Badge variant="default" className="text-xs gap-1"><CheckCircle className="h-3 w-3" /> Paid</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs gap-1"><Clock className="h-3 w-3" /> Unpaid</Badge>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-xs">{formatDate(c.created_at)}</td>
                   <td className="px-4 py-3 font-mono text-xs">
-                    {c.status === 'approved' && c.center_code !== 'PENDING' ? c.center_code : '—'}
+                    {c.status === 'approved' && c.center_code && c.center_code !== 'PENDING' ? c.center_code : '—'}
                   </td>
                   {showActions && (
                     <td className="px-4 py-3 space-x-2">
