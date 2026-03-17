@@ -23,6 +23,8 @@ import {
   Calendar,
   Bell,
   MessageCircle,
+  Plus,
+  CheckSquare,
 } from 'lucide-react';
 
 interface NavItem {
