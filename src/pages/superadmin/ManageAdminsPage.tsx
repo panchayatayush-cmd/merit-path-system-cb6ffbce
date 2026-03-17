@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Shield, UserPlus, Pencil, Ban, CheckCircle, X, Eye, EyeOff } from 'lucide-react';
+import { Shield, UserPlus, Pencil, Ban, CheckCircle, Eye, EyeOff, Copy } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 
@@ -17,6 +17,7 @@ interface Admin {
   full_name: string | null;
   mobile: string | null;
   email: string;
+  admin_code: string | null;
 }
 
 const emptyForm = { full_name: '', email: '', mobile: '', password: '', confirmPassword: '', role: 'admin' };
@@ -27,8 +28,6 @@ export default function ManageAdminsPage() {
   const [listLoading, setListLoading] = useState(true);
   const [form, setForm] = useState({ ...emptyForm });
   const [showCreate, setShowCreate] = useState(false);
-
-  // Edit state
   const [editAdmin, setEditAdmin] = useState<Admin | null>(null);
   const [editForm, setEditForm] = useState({ full_name: '', email: '', mobile: '', password: '' });
   const [editLoading, setEditLoading] = useState(false);
@@ -37,13 +36,11 @@ export default function ManageAdminsPage() {
   const loadAdmins = async () => {
     setListLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-admin', {
-        body: { action: 'list' },
-      });
+      const { data, error } = await supabase.functions.invoke('create-admin', { body: { action: 'list' } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setAdmins(data?.admins ?? []);
-    } catch (err: any) {
+    } catch {
       toast.error('Failed to load admins');
     } finally {
       setListLoading(false);
@@ -55,29 +52,19 @@ export default function ManageAdminsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) return;
-    if (form.password !== form.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-    if (form.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
+    if (form.password !== form.confirmPassword) { toast.error('Passwords do not match'); return; }
+    if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-admin', {
-        body: {
-          action: 'create',
-          email: form.email,
-          password: form.password,
-          role: form.role,
-          full_name: form.full_name,
-          mobile: form.mobile,
-        },
+        body: { action: 'create', email: form.email, password: form.password, role: form.role, full_name: form.full_name, mobile: form.mobile },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Admin created: ${form.email}`);
+      const msg = data?.admin_code
+        ? `Admin created! Admin Code: ${data.admin_code}`
+        : `Admin created: ${form.email}`;
+      toast.success(msg);
       setForm({ ...emptyForm });
       setShowCreate(false);
       loadAdmins();
@@ -90,22 +77,14 @@ export default function ManageAdminsPage() {
 
   const openEdit = (admin: Admin) => {
     setEditAdmin(admin);
-    setEditForm({
-      full_name: admin.full_name ?? '',
-      email: admin.email,
-      mobile: admin.mobile ?? '',
-      password: '',
-    });
+    setEditForm({ full_name: admin.full_name ?? '', email: admin.email, mobile: admin.mobile ?? '', password: '' });
     setShowPassword(false);
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editAdmin) return;
-    if (editForm.password && editForm.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
+    if (editForm.password && editForm.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setEditLoading(true);
     try {
       const body: any = { action: 'update', user_id: editAdmin.user_id };
@@ -113,7 +92,6 @@ export default function ManageAdminsPage() {
       if (editForm.email !== editAdmin.email) body.email = editForm.email;
       if (editForm.mobile !== (editAdmin.mobile ?? '')) body.mobile = editForm.mobile;
       if (editForm.password) body.password = editForm.password;
-
       const { data, error } = await supabase.functions.invoke('create-admin', { body });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -142,6 +120,11 @@ export default function ManageAdminsPage() {
     }
   };
 
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast.success('Admin Code copied!');
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl">
@@ -154,7 +137,6 @@ export default function ManageAdminsPage() {
           </Button>
         </div>
 
-        {/* Admin List */}
         <div className="rounded-lg bg-card border border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
             <h3 className="text-sm font-medium text-foreground">All Admins ({admins.length})</h3>
@@ -164,30 +146,34 @@ export default function ManageAdminsPage() {
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Admin Code</th>
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Email</th>
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Phone</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Role</th>
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Created</th>
                   <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {listLoading ? (
-                  <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</td></tr>
                 ) : admins.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">No admins found</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-muted-foreground">No admins found</td></tr>
                 ) : (
                   admins.map((a) => (
                     <tr key={a.user_id} className="border-b border-border last:border-0 hover:bg-muted/20">
                       <td className="px-4 py-3 text-foreground font-medium">{a.full_name || '—'}</td>
+                      <td className="px-4 py-3">
+                        {a.admin_code ? (
+                          <div className="flex items-center gap-1">
+                            <code className="text-xs font-mono bg-muted px-2 py-1 rounded">{a.admin_code}</code>
+                            <button onClick={() => copyCode(a.admin_code!)} className="text-muted-foreground hover:text-foreground">
+                              <Copy className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : <span className="text-muted-foreground text-xs">—</span>}
+                      </td>
                       <td className="px-4 py-3 text-foreground">{a.email || '—'}</td>
                       <td className="px-4 py-3 text-foreground">{a.mobile || '—'}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant={a.role === 'super_admin' ? 'default' : 'secondary'} className="text-xs">
-                          {a.role === 'super_admin' ? 'Super Admin' : 'Admin'}
-                        </Badge>
-                      </td>
                       <td className="px-4 py-3">
                         {a.is_disabled ? (
                           <Badge variant="destructive" className="text-xs">Disabled</Badge>
@@ -195,21 +181,14 @@ export default function ManageAdminsPage() {
                           <Badge className="text-xs bg-green-600 hover:bg-green-700">Active</Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {new Date(a.created_at).toLocaleDateString()}
-                      </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)} title="Edit">
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
+                          <Button variant="ghost" size="icon"
                             className={`h-8 w-8 ${a.is_disabled ? 'text-green-600' : 'text-destructive'}`}
-                            onClick={() => toggleDisable(a)}
-                            title={a.is_disabled ? 'Enable Login' : 'Disable Login'}
-                          >
+                            onClick={() => toggleDisable(a)} title={a.is_disabled ? 'Enable Login' : 'Disable Login'}>
                             {a.is_disabled ? <CheckCircle className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
                           </Button>
                         </div>
@@ -258,6 +237,7 @@ export default function ManageAdminsPage() {
                   <option value="super_admin">Super Admin</option>
                 </select>
               </div>
+              <p className="text-xs text-muted-foreground">A unique Admin Code will be auto-generated for Admin role accounts.</p>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
                 <Button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Create Admin'}</Button>
@@ -290,13 +270,8 @@ export default function ManageAdminsPage() {
               <div>
                 <Label>New Password <span className="text-muted-foreground text-xs">(leave blank to keep current)</span></Label>
                 <div className="relative">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    value={editForm.password}
-                    onChange={(e) => setEditForm(f => ({ ...f, password: e.target.value }))}
-                    minLength={6}
-                    placeholder="••••••"
-                  />
+                  <Input type={showPassword ? 'text' : 'password'} value={editForm.password}
+                    onChange={(e) => setEditForm(f => ({ ...f, password: e.target.value }))} minLength={6} placeholder="••••••" />
                   <button type="button" className="absolute right-2 top-2.5 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
