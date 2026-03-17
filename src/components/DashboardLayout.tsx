@@ -20,6 +20,7 @@ import {
   Sparkles,
   Calendar,
   Bell,
+  MessageCircle,
 } from 'lucide-react';
 
 interface NavItem {
