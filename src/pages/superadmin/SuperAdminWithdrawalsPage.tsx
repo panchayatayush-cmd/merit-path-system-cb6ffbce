@@ -104,7 +104,10 @@ export default function SuperAdminWithdrawalsPage() {
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <p className="text-lg font-bold tabular-nums text-foreground">₹{Number(r.amount).toFixed(2)}</p>
-            <p className="text-sm font-medium text-foreground">{getUserName(r.user_id)}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-foreground">{getUserName(r.user_id)}</p>
+              <Badge variant="outline" className="text-xs capitalize">{roles[r.user_id] || 'unknown'}</Badge>
+            </div>
             {centerCode && <p className="text-xs text-muted-foreground">Center: <span className="font-mono">{centerCode}</span></p>}
             <p className="text-xs text-muted-foreground">Phone: {getUserPhone(r.user_id)}</p>
             {r.upi_id && <p className="text-xs text-muted-foreground">UPI: <span className="font-mono">{r.upi_id}</span></p>}
