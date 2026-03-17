@@ -36,7 +36,6 @@ export default function AdminDashboard() {
     { label: 'Students', value: stats.students.toString(), icon: <Users className="h-4 w-4" /> },
     { label: 'Centers', value: stats.centers.toString(), icon: <Building2 className="h-4 w-4" /> },
     { label: 'Payments', value: stats.payments.toString(), icon: <CreditCard className="h-4 w-4" /> },
-    { label: 'Questions', value: stats.questions.toString(), icon: <BookOpen className="h-4 w-4" /> },
     { label: 'Admin Earnings', value: `₹${stats.earnings.toFixed(2)}`, icon: <Wallet className="h-4 w-4" /> },
   ];
 
