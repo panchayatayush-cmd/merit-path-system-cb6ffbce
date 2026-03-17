@@ -20,6 +20,7 @@ import ExamPage from "./pages/student/ExamPage";
 import StudentResultsPage from "./pages/student/StudentResultsPage";
 import StudentCertificatePage from "./pages/student/StudentCertificatePage";
 import StudentWalletPage from "./pages/student/StudentWalletPage";
+import StudentChatPage from "./pages/student/StudentChatPage";
 
 // Center pages
 import CenterDashboard from "./pages/center/CenterDashboard";
