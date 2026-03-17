@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import { useChatPersistence, type Msg } from '@/hooks/useChatPersistence';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-chat`;
 

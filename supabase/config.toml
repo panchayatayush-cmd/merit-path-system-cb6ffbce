@@ -1,1 +1,4 @@
 project_id = "xhjchbvowughqcnlfkgt"
+
+[functions.student-chat]
+verify_jwt = false
