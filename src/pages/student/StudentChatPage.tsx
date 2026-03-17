@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import { useChatPersistence, type Msg } from '@/hooks/useChatPersistence';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-chat`;
 
@@ -20,6 +21,7 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export default function StudentChatPage() {
+  const { session } = useAuth();
   const {
     conversations,
     activeConversationId,
@@ -57,7 +59,7 @@ export default function StudentChatPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ checkLimit: true }),
       });
@@ -95,7 +97,7 @@ export default function StudentChatPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ messages: allMessages }),
       });
