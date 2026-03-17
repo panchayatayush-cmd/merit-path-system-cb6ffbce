@@ -190,7 +190,7 @@ serve(async (req) => {
           center_code: profile.center_code,
           payment_id: db_order_id,
           role: "referrer",
-          commission_amount: COMMISSION.REFERRER,
+          commission_amount: EXAM_COMMISSION.REFERRER,
           description: "Referral commission from student exam fee",
         });
       }
