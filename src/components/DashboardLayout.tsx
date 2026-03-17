@@ -51,6 +51,7 @@ const centerNav: NavItem[] = [
   { label: 'Profile', href: '/center/profile', icon: <User className="h-4 w-4" /> },
   { label: 'Students', href: '/center/students', icon: <Users className="h-4 w-4" /> },
   { label: 'Earnings', href: '/center/earnings', icon: <Wallet className="h-4 w-4" /> },
+  { label: 'Bank Details', href: '/center/earnings?tab=bank', icon: <CreditCard className="h-4 w-4" /> },
 ];
 
 const adminNav: NavItem[] = [
