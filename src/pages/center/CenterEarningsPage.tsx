@@ -68,7 +68,7 @@ export default function CenterEarningsPage() {
           <p className="text-xs text-muted-foreground mt-1">₹40 per student referral</p>
         </div>
 
-        <Tabs defaultValue="withdraw" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
             <TabsTrigger value="bank">Bank Details</TabsTrigger>
