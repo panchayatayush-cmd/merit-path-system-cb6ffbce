@@ -57,6 +57,7 @@ const adminNav: NavItem[] = [
   { label: 'Create Center', href: '/admin/create-center', icon: <Plus className="h-4 w-4" /> },
   { label: 'My Centers', href: '/admin/my-centers', icon: <Building2 className="h-4 w-4" /> },
   { label: 'My Center Students', href: '/admin/center-students', icon: <Users className="h-4 w-4" /> },
+  { label: 'Wallet', href: '/admin/wallet', icon: <Wallet className="h-4 w-4" /> },
 ];
 
 const superAdminNav: NavItem[] = [
