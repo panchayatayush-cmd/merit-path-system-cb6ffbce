@@ -20,6 +20,13 @@ declare global {
 
 const CENTER_FEE = 500;
 
+const CENTER_TYPE_OPTIONS = [
+  { value: 'school', label: 'School' },
+  { value: 'coaching_center', label: 'Coaching Center' },
+  { value: 'institute', label: 'Institute' },
+  { value: 'other', label: 'Other' },
+];
+
 export default function RegisterPage() {
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
@@ -35,13 +42,25 @@ export default function RegisterPage() {
   const [centerName, setCenterName] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [mobile, setMobile] = useState('');
-  const [address, setAddress] = useState('');
   const [adminCode, setAdminCode] = useState('');
   const [adminName, setAdminName] = useState('');
   const [adminUserId, setAdminUserId] = useState<string | null>(null);
   const [adminCodeValid, setAdminCodeValid] = useState<boolean | null>(null);
   const [adminCodeLoading, setAdminCodeLoading] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  // Address fields
+  const [state, setState] = useState('');
+  const [district, setDistrict] = useState('');
+  const [city, setCity] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [fullAddress, setFullAddress] = useState('');
+
+  // Institute fields
+  const [centerType, setCenterType] = useState('school');
+  const [instituteName, setInstituteName] = useState('');
+  const [establishedYear, setEstablishedYear] = useState('');
+  const [capacity, setCapacity] = useState('');
 
   const refFromUrl = searchParams.get('ref') ?? '';
 
