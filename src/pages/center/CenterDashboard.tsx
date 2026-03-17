@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
+import CenterShareCard from '@/components/CenterShareCard';
 import { Users, Wallet, Building2, TrendingUp, Clock } from 'lucide-react';
 
 export default function CenterDashboard() {
