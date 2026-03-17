@@ -36,6 +36,7 @@ import AdminCentersPage from "./pages/admin/AdminCentersPage";
 import AdminCreateCenterPage from "./pages/admin/AdminCreateCenterPage";
 import AdminMyCentersPage from "./pages/admin/AdminMyCentersPage";
 import AdminCenterStudentsPage from "./pages/admin/AdminCenterStudentsPage";
+import AdminWalletPage from "./pages/admin/AdminWalletPage";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
@@ -101,6 +102,7 @@ const App = () => (
             <Route path="/admin/create-center" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminCreateCenterPage /></RoleGuard>} />
             <Route path="/admin/my-centers" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminMyCentersPage /></RoleGuard>} />
             <Route path="/admin/center-students" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminCenterStudentsPage /></RoleGuard>} />
+            <Route path="/admin/wallet" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminWalletPage /></RoleGuard>} />
 
             {/* Super Admin */}
             <Route path="/super-admin" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
