@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
-
-type Msg = { role: 'user' | 'assistant'; content: string };
+import ChatSidebar from '@/components/chat/ChatSidebar';
+import { useChatPersistence, type Msg } from '@/hooks/useChatPersistence';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/student-chat`;
 
@@ -18,11 +19,29 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export default function StudentChatPage() {
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const {
+    conversations,
+    activeConversationId,
+    messages,
+    setMessages,
+    loadingConversations,
+    loadConversation,
+    startNewConversation,
+    persistUserMessage,
+    persistAssistantMessage,
+    deleteConversation,
+  } = useChatPersistence();
+
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -39,6 +58,9 @@ export default function StudentChatPage() {
     const allMessages = [...messages, userMsg];
 
     try {
+      // Persist user message & get conversation id
+      const convId = await persistUserMessage(text.trim());
+
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
@@ -75,10 +97,7 @@ export default function StudentChatPage() {
           if (!line.startsWith('data: ')) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') {
-            streamDone = true;
-            break;
-          }
+          if (jsonStr === '[DONE]') { streamDone = true; break; }
 
           try {
             const parsed = JSON.parse(jsonStr);
@@ -100,7 +119,7 @@ export default function StudentChatPage() {
         }
       }
 
-      // Final flush
+      // Flush remaining buffer
       if (textBuffer.trim()) {
         for (let raw of textBuffer.split('\n')) {
           if (!raw) continue;
@@ -125,9 +144,13 @@ export default function StudentChatPage() {
           } catch { /* ignore */ }
         }
       }
+
+      // Persist final assistant response
+      if (assistantSoFar) {
+        await persistAssistantMessage(convId, assistantSoFar);
+      }
     } catch (e: any) {
       toast.error(e?.message ?? 'Failed to get response');
-      // Remove the user message if no assistant response was generated
       if (!assistantSoFar) {
         setMessages((prev) => prev.slice(0, -1));
       }
@@ -144,100 +167,126 @@ export default function StudentChatPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)]">
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-primary" />
+      <div className="flex h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)] rounded-lg border border-border overflow-hidden">
+        {/* Sidebar */}
+        {sidebarOpen && (
+          <div className={`${isMobile ? 'absolute inset-0 z-20 bg-background' : 'w-64 shrink-0'}`}>
+            <ChatSidebar
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              loading={loadingConversations}
+              onSelect={(id) => {
+                loadConversation(id);
+                if (isMobile) setSidebarOpen(false);
+              }}
+              onNew={() => {
+                startNewConversation();
+                if (isMobile) setSidebarOpen(false);
+              }}
+              onDelete={deleteConversation}
+            />
           </div>
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">AI Study Helper</h1>
-            <p className="text-xs text-muted-foreground">Ask any exam-related question</p>
-          </div>
-        </div>
+        )}
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto rounded-lg border border-border bg-card p-4 space-y-4 mb-4">
-          {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-center gap-4">
-              <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="h-7 w-7 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Namaste! 👋 Main aapka AI Study Helper hoon</p>
-                <p className="text-xs text-muted-foreground mt-1">Exam se related koi bhi sawaal poochein</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md mt-2">
-                {SUGGESTED_QUESTIONS.map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    className="text-left text-xs px-3 py-2 rounded-lg border border-border bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
+        {/* Main chat area */}
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Header */}
+          <div className="flex items-center gap-2 p-3 border-b border-border">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+            </Button>
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-primary" />
             </div>
-          )}
+            <div>
+              <h1 className="text-sm font-semibold text-foreground">AI Study Helper</h1>
+              <p className="text-[10px] text-muted-foreground">Ask any exam-related question</p>
+            </div>
+          </div>
 
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              {msg.role === 'assistant' && (
-                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="h-4 w-4 text-primary" />
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-full text-center gap-4">
+                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Bot className="h-7 w-7 text-primary" />
                 </div>
-              )}
-              <div
-                className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-sm ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
-              >
-                {msg.role === 'assistant' ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Namaste! 👋 Main aapka AI Study Helper hoon</p>
+                  <p className="text-xs text-muted-foreground mt-1">Exam se related koi bhi sawaal poochein</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md mt-2">
+                  {SUGGESTED_QUESTIONS.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => sendMessage(q)}
+                      className="text-left text-xs px-3 py-2 rounded-lg border border-border bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <Bot className="h-4 w-4 text-primary" />
                   </div>
-                ) : (
-                  msg.content
+                )}
+                <div
+                  className={`max-w-[80%] rounded-xl px-3.5 py-2.5 text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground'
+                  }`}
+                >
+                  {msg.role === 'assistant' ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+                {msg.role === 'user' && (
+                  <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 )}
               </div>
-              {msg.role === 'user' && (
-                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <User className="h-4 w-4 text-muted-foreground" />
+            ))}
+
+            {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
+              <div className="flex gap-2 justify-start">
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Bot className="h-4 w-4 text-primary" />
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="bg-secondary rounded-xl px-3.5 py-2.5">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
 
-          {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
-            <div className="flex gap-2 justify-start">
-              <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Bot className="h-4 w-4 text-primary" />
-              </div>
-              <div className="bg-secondary rounded-xl px-3.5 py-2.5">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
+          {/* Input */}
+          <form onSubmit={handleSubmit} className="flex gap-2 p-3 border-t border-border">
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Apna sawaal yahan likhein..."
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button type="submit" disabled={isLoading || !input.trim()} size="icon">
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
         </div>
-
-        {/* Input */}
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Apna sawaal yahan likhein..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={isLoading || !input.trim()} size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
       </div>
     </DashboardLayout>
   );
