@@ -137,7 +137,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all duration-150"
           >
             <LogOut className="h-4 w-4" />
-            Sign Out
+            {t('signOut')}
           </button>
         </div>
       </aside>
