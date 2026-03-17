@@ -212,11 +212,6 @@ export default function AdminCreateCenterPage() {
               <p><strong>Phone:</strong> {form.mobile}</p>
             </div>
 
-            <div className="bg-muted/50 rounded-md p-3">
-              <p className="text-xs text-muted-foreground">
-                <strong>Distribution:</strong> ₹200 → Admin Wallet | ₹300 → Super Admin Wallet
-              </p>
-            </div>
 
             <Button onClick={handlePayment} disabled={loading} className="w-full">
               <CreditCard className="h-4 w-4 mr-2" />
