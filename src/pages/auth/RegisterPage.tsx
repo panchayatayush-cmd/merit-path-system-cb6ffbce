@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<RegisterRole>('student');
   const [centerName, setCenterName] = useState('');
+  const [adminCenterCode, setAdminCenterCode] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, refreshRole } = useAuth();
