@@ -74,6 +74,7 @@ const superAdminNav: NavItem[] = [
   { label: 'Center Approvals', href: '/super-admin/center-approvals', icon: <CheckSquare className="h-4 w-4" /> },
   { label: 'Payments', href: '/super-admin/payments', icon: <CreditCard className="h-4 w-4" /> },
   { label: 'Wallets', href: '/super-admin/wallets', icon: <Wallet className="h-4 w-4" /> },
+  { label: 'My Wallet', href: '/super-admin/my-wallet', icon: <Landmark className="h-4 w-4" /> },
   { label: 'Withdrawals', href: '/super-admin/withdrawals', icon: <ArrowDownToLine className="h-4 w-4" /> },
   { label: 'Gallery', href: '/super-admin/gallery', icon: <FileText className="h-4 w-4" /> },
   { label: 'Fund', href: '/super-admin/fund', icon: <BarChart3 className="h-4 w-4" /> },
