@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
+import CenterShareCard from '@/components/CenterShareCard';
 import { Users, Wallet, Building2, TrendingUp, Clock } from 'lucide-react';
 
 export default function CenterDashboard() {
@@ -68,10 +69,15 @@ export default function CenterDashboard() {
         </div>
 
 
+        {/* Center Share Card - only show after payment */}
+        {center?.payment_verified && center?.center_code && (
+          <CenterShareCard centerCode={center.center_code} />
+        )}
+
         {!center?.payment_verified && (
           <div className="card-shadow rounded-lg bg-card p-6 border-l-4 border-destructive">
             <p className="text-sm text-foreground font-medium">⚠️ Payment Required</p>
-            <p className="text-sm text-muted-foreground mt-1">₹500 registration fee pay करें।</p>
+            <p className="text-sm text-muted-foreground mt-1">₹500 registration fee pay करें। Payment के बाद आपका Center Code share करने के लिए available होगा।</p>
             <button onClick={() => window.location.href = '/center/payment'} className="mt-3 text-sm font-medium text-primary hover:underline">Pay Now →</button>
           </div>
         )}

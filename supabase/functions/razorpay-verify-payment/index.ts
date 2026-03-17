@@ -165,8 +165,6 @@ serve(async (req) => {
     }
 
     // ===== EXAM FEE DISTRIBUTION (₹300 total) =====
-    // Referring Student: ₹70, Center: ₹40, Admin: ₹30, Super Admin: ₹60, Scholarship: ₹100
-
     const { data: profile } = await serviceClient
       .from("profiles")
       .select("center_code, referred_by, referral_code")
@@ -193,6 +191,14 @@ serve(async (req) => {
           commission_amount: EXAM_COMMISSION.REFERRER,
           description: "Referral commission from student exam fee",
         });
+
+        // Send notification to referring student
+        await serviceClient.from("notifications").insert({
+          user_id: referrerProfile.user_id,
+          title: "₹70 Referral Reward Received!",
+          message: "You have received ₹70 referral reward because a student registered and paid the exam fee using your referral link. Check your wallet in the dashboard.",
+          channel: "in_app",
+        });
       }
     }
 
@@ -215,6 +221,14 @@ serve(async (req) => {
           role: "center",
           commission_amount: EXAM_COMMISSION.CENTER,
           description: "Center commission from student exam fee",
+        });
+
+        // Send notification to center owner
+        await serviceClient.from("notifications").insert({
+          user_id: center.user_id,
+          title: "₹40 Referral Reward Received!",
+          message: "You have received ₹40 referral reward because a student registered and paid the exam fee using your center code.",
+          channel: "in_app",
         });
       }
     }
@@ -270,7 +284,7 @@ serve(async (req) => {
       payment_order_id: db_order_id,
     });
 
-    // Generate referral code for the paying student if not already set
+    // Generate referral code for the paying student (only after payment)
     if (!profile?.referral_code) {
       const { data: refCode } = await serviceClient.rpc("generate_referral_code");
       if (refCode) {

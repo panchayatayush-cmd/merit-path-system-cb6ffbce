@@ -2,35 +2,32 @@ import { Copy, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-interface ReferralShareCardProps {
-  referralCode: string;
+interface CenterShareCardProps {
+  centerCode: string;
 }
 
 const SITE_URL = 'https://merit-path-system.lovable.app';
 
-export default function ReferralShareCard({ referralCode }: ReferralShareCardProps) {
-  const registerUrl = `${SITE_URL}/auth/register?ref=${referralCode}`;
+export default function CenterShareCard({ centerCode }: CenterShareCardProps) {
+  const registerUrl = `${SITE_URL}/auth/register?center=${centerCode}`;
 
   const message = `🎓 GPHDM National Scholarship Exam 2026
 
-मैं GPHDM छात्रवृत्ति परीक्षा में भाग ले चुका/चुकी हूँ।
+हमारे सेंटर के माध्यम से छात्र GPHDM छात्रवृत्ति परीक्षा के लिए रजिस्टर कर सकते हैं।
+
 आप भी रजिस्टर करें और छात्रवृत्ति पाए।
 
 ✅ Class 1–12 के लिए
 ✅ Top 100 Students को Scholarship
 ✅ QR-Coded Certificate
 
-💰 Referral Bonus
-
-अगर आप मेरे लिंक से रजिस्टर करके अपनी परीक्षा फीस सफलतापूर्वक जमा करते हैं, तो मुझे ₹70 Referral Reward मिलेगा।
-
-आप भी फीस जमा करने के बाद अपना Referral Code प्राप्त करेंगे और हर सफल referral पर ₹70 प्राप्त कर सकते हैं।
+अगर आप हमारे Center Code से रजिस्टर करके परीक्षा फीस सफलतापूर्वक जमा करते हैं, तो हमारा सेंटर ₹40 referral reward प्राप्त करेगा।
 
 Register Here
 ${registerUrl}
 
-My Referral Code
-${referralCode}`;
+Center Code
+${centerCode}`;
 
   const encodedMessage = encodeURIComponent(message);
 
@@ -78,23 +75,23 @@ ${referralCode}`;
   };
 
   const copyCode = () => {
-    navigator.clipboard.writeText(referralCode);
-    toast.success('Referral code copied!');
+    navigator.clipboard.writeText(centerCode);
+    toast.success('Center code copied!');
   };
 
   return (
     <div className="card-shadow rounded-lg bg-card p-4 space-y-4">
-      <h2 className="text-sm font-semibold text-foreground">🔗 Your Referral Code</h2>
+      <h2 className="text-sm font-semibold text-foreground">🏫 Your Center Code</h2>
 
       <div className="flex items-center gap-3">
-        <span className="font-mono text-lg font-bold text-primary">{referralCode}</span>
+        <span className="font-mono text-lg font-bold text-primary">{centerCode}</span>
         <button onClick={copyCode} className="p-1.5 rounded-md hover:bg-secondary transition-colors">
           <Copy className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Share करें — हर सफल referral पर आपको <span className="font-semibold text-primary">₹70</span> मिलेंगे!
+        Share करें — हर student की फीस पर आपको <span className="font-semibold text-primary">₹40</span> मिलेंगे!
       </p>
 
       <div className="border-t border-border pt-3">
