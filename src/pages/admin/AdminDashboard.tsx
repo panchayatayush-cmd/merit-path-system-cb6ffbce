@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       <div className="space-y-6">
         <h1 className="text-base font-semibold text-foreground">Admin Dashboard</h1>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map((c) => (
             <div key={c.label} className="card-shadow rounded-lg bg-card p-4">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
