@@ -51,6 +51,9 @@ import SuperAdminAIExamPage from "./pages/superadmin/SuperAdminAIExamPage";
 import SuperAdminExamSchedulerPage from "./pages/superadmin/SuperAdminExamSchedulerPage";
 import SuperAdminNotificationsPage from "./pages/superadmin/SuperAdminNotificationsPage";
 import SuperAdminCenterApprovalsPage from "./pages/superadmin/SuperAdminCenterApprovalsPage";
+import SuperAdminStudentsPage from "./pages/superadmin/SuperAdminStudentsPage";
+import SuperAdminFundPage from "./pages/superadmin/SuperAdminFundPage";
+import SuperAdminSettingsPage from "./pages/superadmin/SuperAdminSettingsPage";
 // Public pages
 import Index from "./pages/Index";
 import AboutUsPage from "./pages/AboutUsPage";
