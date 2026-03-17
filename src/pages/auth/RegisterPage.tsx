@@ -147,15 +147,27 @@ export default function RegisterPage() {
           </div>
 
           {role === 'center' && (
-            <div>
-              <Label htmlFor="centerName">Center Name</Label>
-              <Input
-                id="centerName"
-                value={centerName}
-                onChange={(e) => setCenterName(e.target.value)}
-                required
-                placeholder="Enter center name"
-              />
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="centerName">Center Name</Label>
+                <Input
+                  id="centerName"
+                  value={centerName}
+                  onChange={(e) => setCenterName(e.target.value)}
+                  required
+                  placeholder="Enter center name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="adminCenterCode">Admin Center Code (Optional)</Label>
+                <Input
+                  id="adminCenterCode"
+                  value={adminCenterCode}
+                  onChange={(e) => setAdminCenterCode(e.target.value)}
+                  placeholder="Enter admin's center code"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Admin का Center Code डालें जिसने आपको register किया है।</p>
+              </div>
             </div>
           )}
 
