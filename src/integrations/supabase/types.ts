@@ -387,6 +387,41 @@ export type Database = {
           },
         ]
       }
+      exam_sessions: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          option_orders: Json
+          question_order: Json
+          student_id: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          option_orders?: Json
+          question_order?: Json
+          student_id: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          option_orders?: Json
+          question_order?: Json
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_sessions_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "exam_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gallery_photos: {
         Row: {
           created_at: string
