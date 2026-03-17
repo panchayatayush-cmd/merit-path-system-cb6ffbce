@@ -45,12 +45,8 @@ export default function RegisterPage() {
         // Validate Center Code if provided
         if (studentCenterCode.trim()) {
           const code = studentCenterCode.trim().toUpperCase();
-          const { data: centerData } = await supabase
-            .from('centers')
-            .select('center_code')
-            .eq('center_code', code)
-            .maybeSingle();
-          if (!centerData) {
+          const { data: isValid } = await supabase.rpc('validate_center_code', { _code: code });
+          if (!isValid) {
             toast.error('Invalid Center Code. Please check and try again.');
             setLoading(false);
             return;
@@ -61,12 +57,8 @@ export default function RegisterPage() {
         // Validate Student Referral Code if provided
         if (studentReferralCode.trim()) {
           const refCode = studentReferralCode.trim().toUpperCase();
-          const { data: referrerData } = await supabase
-            .from('profiles')
-            .select('user_id, referral_code')
-            .eq('referral_code', refCode)
-            .maybeSingle();
-          if (!referrerData) {
+          const { data: isValid } = await supabase.rpc('validate_referral_code', { _code: refCode });
+          if (!isValid) {
             toast.error('Invalid Student Referral Code. Please check and try again.');
             setLoading(false);
             return;

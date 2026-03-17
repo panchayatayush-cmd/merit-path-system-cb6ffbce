@@ -1231,6 +1231,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_center_code: { Args: { _code: string }; Returns: boolean }
+      validate_referral_code: { Args: { _code: string }; Returns: boolean }
     }
     Enums: {
       app_role: "student" | "center" | "admin" | "super_admin"
