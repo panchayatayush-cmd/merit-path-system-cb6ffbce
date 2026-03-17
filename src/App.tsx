@@ -33,6 +33,8 @@ import CenterEarningsPage from "./pages/center/CenterEarningsPage";
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCentersPage from "./pages/admin/AdminCentersPage";
+import AdminCreateCenterPage from "./pages/admin/AdminCreateCenterPage";
+import AdminMyCentersPage from "./pages/admin/AdminMyCentersPage";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
