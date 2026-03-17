@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Users, Building2, CreditCard, BookOpen, Wallet } from 'lucide-react';
+import { Users, Building2, CreditCard, Wallet } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
