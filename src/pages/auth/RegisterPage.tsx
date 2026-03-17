@@ -327,60 +327,138 @@ export default function RegisterPage() {
 
         {/* Center Form */}
         {role === 'center' && (
-          <form onSubmit={handleCenterSubmit} className="space-y-3">
-            <div>
-              <Label>Center Name <span className="text-destructive">*</span></Label>
-              <Input value={centerName} onChange={(e) => setCenterName(e.target.value)} required placeholder="Enter center name" />
-            </div>
-            <div>
-              <Label>Center Owner Name <span className="text-destructive">*</span></Label>
-              <Input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required placeholder="Enter owner name" />
-            </div>
-            <div>
-              <Label>Mobile Number <span className="text-destructive">*</span></Label>
-              <Input value={mobile} onChange={(e) => setMobile(e.target.value)} required placeholder="Enter mobile number" />
-            </div>
-            <div>
-              <Label>Address <span className="text-destructive">*</span></Label>
-              <Input value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="Enter full address" />
-            </div>
-            <div>
-              <Label>Admin Code <span className="text-destructive">*</span></Label>
-              <Input
-                value={adminCode}
-                onChange={(e) => {
-                  const v = e.target.value.toUpperCase();
-                  setAdminCode(v);
-                  setAdminCodeValid(null);
-                  setAdminName('');
-                }}
-                onBlur={() => validateAdminCode(adminCode)}
-                required
-                placeholder="Enter admin code (e.g. ADM123456)"
-                className={adminCodeValid === false ? 'border-destructive' : adminCodeValid === true ? 'border-emerald-500' : ''}
-              />
-              {adminCodeLoading && <p className="text-xs text-muted-foreground mt-1">Validating...</p>}
-              {adminCodeValid === false && <p className="text-xs text-destructive mt-1">Invalid Admin Code</p>}
-              {adminCodeValid === true && <p className="text-xs text-emerald-600 mt-1">✓ Valid Admin Code</p>}
-            </div>
-            {adminCodeValid && (
+          <form onSubmit={handleCenterSubmit} className="space-y-5">
+            {/* Section: Basic Info */}
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold text-foreground border-b border-border pb-1 mb-2">Basic Info</legend>
               <div>
-                <Label>Admin Name</Label>
-                <Input value={adminName} readOnly className="bg-muted" />
+                <Label>Center Name <span className="text-destructive">*</span></Label>
+                <Input value={centerName} onChange={(e) => setCenterName(e.target.value)} required placeholder="Enter center name" />
               </div>
-            )}
-            <div>
-              <Label>Email <span className="text-destructive">*</span></Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="Enter email" />
-            </div>
-            <div>
-              <Label>Password <span className="text-destructive">*</span></Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Min 6 characters" />
-            </div>
-            <div>
-              <Label>Confirm Password <span className="text-destructive">*</span></Label>
-              <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required placeholder="Confirm password" />
-            </div>
+              <div>
+                <Label>Center Owner Name <span className="text-destructive">*</span></Label>
+                <Input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} required placeholder="Enter owner name" />
+              </div>
+              <div>
+                <Label>Mobile Number <span className="text-destructive">*</span></Label>
+                <Input value={mobile} onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))} required placeholder="10-digit mobile number" maxLength={10} />
+              </div>
+            </fieldset>
+
+            {/* Section: Address Details */}
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold text-foreground border-b border-border pb-1 mb-2">Address Details</legend>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>State <span className="text-destructive">*</span></Label>
+                  <Input value={state} onChange={(e) => setState(e.target.value)} required placeholder="State" />
+                </div>
+                <div>
+                  <Label>District <span className="text-destructive">*</span></Label>
+                  <Input value={district} onChange={(e) => setDistrict(e.target.value)} required placeholder="District" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>City / Village <span className="text-destructive">*</span></Label>
+                  <Input value={city} onChange={(e) => setCity(e.target.value)} required placeholder="City / Village" />
+                </div>
+                <div>
+                  <Label>Pincode <span className="text-destructive">*</span></Label>
+                  <Input value={pincode} onChange={(e) => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))} required placeholder="6-digit pincode" maxLength={6} />
+                </div>
+              </div>
+              <div>
+                <Label>Full Address</Label>
+                <textarea
+                  value={fullAddress}
+                  onChange={(e) => setFullAddress(e.target.value)}
+                  placeholder="Enter full address (optional)"
+                  rows={2}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              </div>
+            </fieldset>
+
+            {/* Section: Institute Details */}
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold text-foreground border-b border-border pb-1 mb-2">Institute Details</legend>
+              <div>
+                <Label>Center Type <span className="text-destructive">*</span></Label>
+                <select
+                  value={centerType}
+                  onChange={(e) => setCenterType(e.target.value)}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {CENTER_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>Institute Name <span className="text-destructive">*</span></Label>
+                <Input value={instituteName} onChange={(e) => setInstituteName(e.target.value)} required placeholder="Enter institute / school name" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Established Year</Label>
+                  <Input type="number" value={establishedYear} onChange={(e) => setEstablishedYear(e.target.value)} placeholder="e.g. 2010" min={1900} max={2026} />
+                </div>
+                <div>
+                  <Label>Total Capacity</Label>
+                  <Input type="number" value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="e.g. 200" min={1} />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Section: Admin Linking */}
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold text-foreground border-b border-border pb-1 mb-2">Admin Linking</legend>
+              <div>
+                <Label>Admin Code <span className="text-destructive">*</span></Label>
+                <Input
+                  value={adminCode}
+                  onChange={(e) => {
+                    const v = e.target.value.toUpperCase();
+                    setAdminCode(v);
+                    setAdminCodeValid(null);
+                    setAdminName('');
+                  }}
+                  onBlur={() => validateAdminCode(adminCode)}
+                  required
+                  placeholder="Enter admin code (e.g. ADM123456)"
+                  className={adminCodeValid === false ? 'border-destructive' : adminCodeValid === true ? 'border-emerald-500' : ''}
+                />
+                {adminCodeLoading && <p className="text-xs text-muted-foreground mt-1">Validating...</p>}
+                {adminCodeValid === false && <p className="text-xs text-destructive mt-1">Invalid Admin Code</p>}
+                {adminCodeValid === true && <p className="text-xs text-emerald-600 mt-1">✓ Valid Admin Code</p>}
+              </div>
+              {adminCodeValid && (
+                <div>
+                  <Label>Admin Name</Label>
+                  <Input value={adminName} readOnly className="bg-muted" />
+                </div>
+              )}
+            </fieldset>
+
+            {/* Section: Account Setup */}
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-semibold text-foreground border-b border-border pb-1 mb-2">Account Setup</legend>
+              <div>
+                <Label>Email <span className="text-destructive">*</span></Label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="Enter email" />
+              </div>
+              <div>
+                <Label>Password <span className="text-destructive">*</span></Label>
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Min 6 characters" />
+              </div>
+              <div>
+                <Label>Confirm Password <span className="text-destructive">*</span></Label>
+                <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required placeholder="Confirm password" />
+              </div>
+            </fieldset>
+
             <Button type="submit" className="w-full" disabled={loading || !adminCodeValid}>
               {loading ? 'Processing...' : 'Register & Pay ₹500'}
             </Button>
