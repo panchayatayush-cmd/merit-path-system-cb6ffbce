@@ -37,6 +37,7 @@ const studentNav: NavItem[] = [
   { label: 'Dashboard', href: '/student', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Profile', href: '/student/profile', icon: <User className="h-4 w-4" /> },
   { label: 'Payment', href: '/student/payment', icon: <CreditCard className="h-4 w-4" /> },
+  { label: 'Syllabus', href: '/student/syllabus', icon: <BookOpen className="h-4 w-4" /> },
   { label: 'Exam', href: '/student/exam', icon: <BookOpen className="h-4 w-4" /> },
   { label: 'Results', href: '/student/results', icon: <FileText className="h-4 w-4" /> },
   { label: 'Certificate', href: '/student/certificate', icon: <Award className="h-4 w-4" /> },
@@ -62,7 +63,7 @@ const adminNav: NavItem[] = [
 
 const superAdminNav: NavItem[] = [
   { label: 'Dashboard', href: '/super-admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Users', href: '/super-admin/users', icon: <Users className="h-4 w-4" /> },
+  { label: 'Students', href: '/super-admin/students', icon: <Users className="h-4 w-4" /> },
   { label: 'Admins', href: '/super-admin/admins', icon: <Shield className="h-4 w-4" /> },
   { label: 'Syllabus', href: '/super-admin/syllabus', icon: <BookOpen className="h-4 w-4" /> },
   { label: 'AI Exam', href: '/super-admin/ai-exam', icon: <Sparkles className="h-4 w-4" /> },
