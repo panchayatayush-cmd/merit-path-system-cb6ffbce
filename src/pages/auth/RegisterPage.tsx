@@ -158,7 +158,7 @@ export default function RegisterPage() {
         <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2026</p>
 
         {refFromUrl && (
-          <div className="mb-4 rounded-md bg-accent/10 border border-accent/20 px-3 py-2 text-sm text-accent-foreground">
+        <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-800">
             ✅ Referral link detected. Your referral will be applied automatically.
           </div>
         )}
