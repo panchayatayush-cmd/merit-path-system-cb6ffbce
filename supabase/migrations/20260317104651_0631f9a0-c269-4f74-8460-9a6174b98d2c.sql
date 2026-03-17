@@ -1,0 +1,2 @@
+ALTER TABLE public.payment_orders DROP CONSTRAINT payment_orders_order_type_check;
+ALTER TABLE public.payment_orders ADD CONSTRAINT payment_orders_order_type_check CHECK (order_type = ANY (ARRAY['exam_fee'::text, 'center_registration'::text, 'admin_center_creation'::text]));
