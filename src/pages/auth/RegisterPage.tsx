@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageToggle from '@/components/LanguageToggle';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,9 +22,9 @@ export default function RegisterPage() {
   const [adminCenterCode, setAdminCenterCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { refreshRole } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
-  // Silently capture referral code from URL
   const refFromUrl = searchParams.get('ref') ?? '';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +40,6 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // --- Validate referral code silently (student only) ---
       let validatedReferredBy: string | null = null;
       let referrerCenterCode: string | null = null;
 
@@ -47,7 +48,6 @@ export default function RegisterPage() {
         const { data: isValid } = await supabase.rpc('validate_referral_code', { _code: refCode });
         if (isValid) {
           validatedReferredBy = refCode;
-          // Fetch referrer's center_code to auto-link
           const { data: referrerProfile } = await supabase
             .from('profiles')
             .select('center_code')
@@ -57,10 +57,8 @@ export default function RegisterPage() {
             referrerCenterCode = referrerProfile.center_code;
           }
         }
-        // If invalid, silently ignore — allow normal registration
       }
 
-      // --- Sign up ---
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -72,7 +70,6 @@ export default function RegisterPage() {
       if (!session?.user) throw new Error('Registration failed – no session. Please try again.');
       const userId = session.user.id;
 
-      // Prevent self-referral
       if (validatedReferredBy) {
         const { data: selfCheck } = await supabase
           .from('profiles')
@@ -85,14 +82,12 @@ export default function RegisterPage() {
         }
       }
 
-      // Assign role
       const { error: roleError } = await supabase.from('user_roles').insert({
         user_id: userId,
         role: role,
       });
       if (roleError) throw roleError;
 
-      // If center, create center record
       if (role === 'center') {
         const { data: codeData } = await supabase.rpc('generate_center_code');
         const centerCode = codeData ?? `CTR${Math.floor(1000 + Math.random() * 9000)}`;
@@ -119,14 +114,12 @@ export default function RegisterPage() {
         if (centerError) throw centerError;
       }
 
-      // Create wallet
       await supabase.from('wallets').insert({
         user_id: userId,
         role: role,
         balance: 0,
       });
 
-      // For students: store referred_by & auto-linked center_code
       if (role === 'student') {
         await supabase
           .from('profiles')
@@ -138,7 +131,6 @@ export default function RegisterPage() {
       }
 
       await refreshRole();
-
       toast.success('Registration successful!');
       navigate(role === 'student' ? '/student/profile' : '/center');
     } catch (error: any) {
@@ -151,21 +143,23 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4 py-8">
       <div className="w-full max-w-md card-shadow rounded-lg bg-card p-8 animate-fade-in">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
-          <ChevronLeft className="h-3 w-3" /> Home
-        </Link>
-        <h1 className="text-xl font-semibold text-foreground mb-1">Create Account</h1>
-        <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2026</p>
+        <div className="flex items-center justify-between mb-4">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronLeft className="h-3 w-3" /> {t('home')}
+          </Link>
+          <LanguageToggle />
+        </div>
+        <h1 className="text-xl font-semibold text-foreground mb-1">{t('createAccount')}</h1>
+        <p className="text-sm text-muted-foreground mb-6">{t('scholarshipExam2026')}</p>
 
         {refFromUrl && (
           <div className="mb-4 rounded-md border border-emerald-400 bg-emerald-50 px-3 py-2.5 text-sm" style={{ color: '#065f46' }}>
-            <p className="font-semibold">✅ Referral link detected!</p>
-            <p className="mt-0.5">आपका referral अपने आप लागू हो जाएगा।</p>
+            <p className="font-semibold">{t('referralDetected')}</p>
+            <p className="mt-0.5">{t('referralAutoApply')}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Role selector */}
           <div className="flex gap-2">
             <button
               type="button"
@@ -176,7 +170,7 @@ export default function RegisterPage() {
                   : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
-              Student
+              {t('student')}
             </button>
             <button
               type="button"
@@ -187,80 +181,48 @@ export default function RegisterPage() {
                   : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
-              Center
+              {t('center')}
             </button>
           </div>
 
           {role === 'center' && (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="centerName">Center Name</Label>
-                <Input
-                  id="centerName"
-                  value={centerName}
-                  onChange={(e) => setCenterName(e.target.value)}
-                  required
-                  placeholder="Enter center name"
-                />
+                <Label htmlFor="centerName">{t('centerName')}</Label>
+                <Input id="centerName" value={centerName} onChange={(e) => setCenterName(e.target.value)} required placeholder={t('enterCenterName')} />
               </div>
               <div>
-                <Label htmlFor="adminCenterCode">Admin Center Code (Optional)</Label>
-                <Input
-                  id="adminCenterCode"
-                  value={adminCenterCode}
-                  onChange={(e) => setAdminCenterCode(e.target.value)}
-                  placeholder="Enter admin's center code"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Admin का Center Code डालें जिसने आपको register किया है।</p>
+                <Label htmlFor="adminCenterCode">{t('adminCenterCode')}</Label>
+                <Input id="adminCenterCode" value={adminCenterCode} onChange={(e) => setAdminCenterCode(e.target.value)} placeholder={t('enterAdminCenterCode')} />
+                <p className="text-xs text-muted-foreground mt-1">{t('adminCenterCodeHint')}</p>
               </div>
             </div>
           )}
 
           <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="you@example.com"
-            />
+            <Label htmlFor="email">{t('email')}</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={t('emailPlaceholder')} />
           </div>
 
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Min 6 characters"
-            />
+            <Label htmlFor="password">{t('password')}</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder={t('minChars')} />
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              placeholder="Confirm your password"
-            />
+            <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
+            <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required placeholder={t('confirmYourPassword')} />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? t('creatingAccount') : t('createAccount')}
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link to="/auth/login" className="text-accent hover:underline">
-            Sign in
+            {t('signIn')}
           </Link>
         </p>
       </div>

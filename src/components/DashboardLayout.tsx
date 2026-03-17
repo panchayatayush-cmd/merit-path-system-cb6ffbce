@@ -146,11 +146,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <main className="flex-1 flex flex-col min-h-screen">
         {/* Mobile header */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-          <h2 className="text-sm font-semibold text-foreground">Scholarship Exam</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t('scholarshipExam')}</h2>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <NotificationBell />
             <button onClick={signOut} className="text-sm text-muted-foreground hover:text-foreground">
-              Sign Out
+              {t('signOut')}
             </button>
           </div>
         </header>
