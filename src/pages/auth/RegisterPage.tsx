@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,25 +18,12 @@ export default function RegisterPage() {
   const [role, setRole] = useState<RegisterRole>('student');
   const [centerName, setCenterName] = useState('');
   const [adminCenterCode, setAdminCenterCode] = useState('');
-  // Student-specific fields
-  const [studentCenterCode, setStudentCenterCode] = useState('');
-  const [studentReferralCode, setStudentReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp, refreshRole } = useAuth();
+  const { refreshRole } = useAuth();
   const navigate = useNavigate();
 
-  // Auto-detect referral codes from URL params
+  // Silently capture referral code from URL
   const refFromUrl = searchParams.get('ref') ?? '';
-  const centerFromUrl = searchParams.get('center') ?? '';
-
-  useEffect(() => {
-    if (refFromUrl) {
-      setStudentReferralCode(refFromUrl);
-    }
-    if (centerFromUrl) {
-      setStudentCenterCode(centerFromUrl);
-    }
-  }, [refFromUrl, centerFromUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,34 +38,26 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // --- Pre-signup validation for student codes ---
-      let validatedCenterCode: string | null = null;
+      // --- Validate referral code silently (student only) ---
       let validatedReferredBy: string | null = null;
+      let referrerCenterCode: string | null = null;
 
-      if (role === 'student') {
-        // Validate Center Code if provided
-        if (studentCenterCode.trim()) {
-          const code = studentCenterCode.trim().toUpperCase();
-          const { data: isValid } = await supabase.rpc('validate_center_code', { _code: code });
-          if (!isValid) {
-            toast.error('Invalid Center Code. Please check and try again.');
-            setLoading(false);
-            return;
-          }
-          validatedCenterCode = code;
-        }
-
-        // Validate Student Referral Code if provided
-        if (studentReferralCode.trim()) {
-          const refCode = studentReferralCode.trim();
-          const { data: isValid } = await supabase.rpc('validate_referral_code', { _code: refCode });
-          if (!isValid) {
-            toast.error('Invalid Student Referral Code. Please check and try again.');
-            setLoading(false);
-            return;
-          }
+      if (role === 'student' && refFromUrl.trim()) {
+        const refCode = refFromUrl.trim();
+        const { data: isValid } = await supabase.rpc('validate_referral_code', { _code: refCode });
+        if (isValid) {
           validatedReferredBy = refCode;
+          // Fetch referrer's center_code to auto-link
+          const { data: referrerProfile } = await supabase
+            .from('profiles')
+            .select('center_code')
+            .eq('referral_code', refCode)
+            .maybeSingle();
+          if (referrerProfile?.center_code) {
+            referrerCenterCode = referrerProfile.center_code;
+          }
         }
+        // If invalid, silently ignore — allow normal registration
       }
 
       // --- Sign up ---
@@ -102,7 +81,7 @@ export default function RegisterPage() {
           .maybeSingle();
         if (selfCheck?.referral_code === validatedReferredBy) {
           validatedReferredBy = null;
-          toast.warning('You cannot use your own referral code.');
+          referrerCenterCode = null;
         }
       }
 
@@ -147,18 +126,17 @@ export default function RegisterPage() {
         balance: 0,
       });
 
-      // For students: store center_code & referred_by (NO referral code generation - that happens after payment)
+      // For students: store referred_by & auto-linked center_code
       if (role === 'student') {
         await supabase
           .from('profiles')
           .update({
-            center_code: validatedCenterCode,
+            center_code: referrerCenterCode,
             referred_by: validatedReferredBy,
           })
           .eq('user_id', userId);
       }
 
-      // Refresh role in AuthContext so RoleGuard works
       await refreshRole();
 
       toast.success('Registration successful!');
@@ -178,6 +156,12 @@ export default function RegisterPage() {
         </Link>
         <h1 className="text-xl font-semibold text-foreground mb-1">Create Account</h1>
         <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2026</p>
+
+        {refFromUrl && (
+          <div className="mb-4 rounded-md bg-accent/10 border border-accent/20 px-3 py-2 text-sm text-accent-foreground">
+            ✅ Referral link detected. Your referral will be applied automatically.
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Role selector */}
@@ -227,43 +211,6 @@ export default function RegisterPage() {
                   placeholder="Enter admin's center code"
                 />
                 <p className="text-xs text-muted-foreground mt-1">Admin का Center Code डालें जिसने आपको register किया है।</p>
-              </div>
-            </div>
-          )}
-
-          {role === 'student' && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="studentCenterCode">Center Code (Optional)</Label>
-                <Input
-                  id="studentCenterCode"
-                  value={studentCenterCode}
-                  onChange={(e) => !centerFromUrl && setStudentCenterCode(e.target.value)}
-                  readOnly={!!centerFromUrl}
-                  placeholder="Enter center code"
-                  className={centerFromUrl ? 'bg-muted cursor-not-allowed' : ''}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {centerFromUrl
-                    ? '✅ Center Code automatically applied from link.'
-                    : 'अगर आप किसी Center से जुड़े हैं तो उनका Center Code डालें।'}
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="studentReferralCode">Student Referral Code (Optional)</Label>
-                <Input
-                  id="studentReferralCode"
-                  value={studentReferralCode}
-                  onChange={(e) => !refFromUrl && setStudentReferralCode(e.target.value)}
-                  readOnly={!!refFromUrl}
-                  placeholder="Enter student referral code"
-                  className={refFromUrl ? 'bg-muted cursor-not-allowed' : ''}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {refFromUrl
-                    ? '✅ Referral Code automatically applied from link.'
-                    : 'किसी Student का Referral Code डालें अगर आपके पास है।'}
-                </p>
               </div>
             </div>
           )}
