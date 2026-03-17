@@ -10,11 +10,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const load = async () => {
-      const [students, centers, payments, questions] = await Promise.all([
+      const [students, centers, payments] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('centers').select('id', { count: 'exact', head: true }),
         supabase.from('payment_orders').select('id', { count: 'exact', head: true }).eq('status', 'verified'),
-        supabase.from('questions').select('id', { count: 'exact', head: true }),
       ]);
 
       let earnings = 0;
