@@ -248,7 +248,7 @@ serve(async (req) => {
       .eq("role", "super_admin");
 
     if (superAdminRoles && superAdminRoles.length > 0) {
-      const perSuperAdmin = COMMISSION.SUPER_ADMIN / superAdminRoles.length;
+      const perSuperAdmin = EXAM_COMMISSION.SUPER_ADMIN / superAdminRoles.length;
       for (const sa of superAdminRoles) {
         await creditWallet(serviceClient, sa.user_id, "super_admin", perSuperAdmin, "Super Admin commission from exam fee");
 
