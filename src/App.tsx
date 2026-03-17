@@ -50,6 +50,7 @@ import PhotoGalleryPage from "./pages/PhotoGalleryPage";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
 import NotFound from "./pages/NotFound";
 
+
 const queryClient = new QueryClient();
 
 const App = () => (
