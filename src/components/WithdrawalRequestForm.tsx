@@ -17,7 +17,7 @@ export default function WithdrawalRequestForm({ walletId, balance, onSuccess }: 
   const [amount, setAmount] = useState('');
   const [upiId, setUpiId] = useState('');
   const [loading, setLoading] = useState(false);
-  const [centerBankDetails, setCenterBankDetails] = useState<any>(null);
+  const [bankDetails, setBankDetails] = useState<any>(null);
 
   // For students, get bank details from localStorage
   const getStudentBankDetails = () => {
@@ -29,18 +29,18 @@ export default function WithdrawalRequestForm({ walletId, balance, onSuccess }: 
     return null;
   };
 
-  // For centers, fetch from DB
+  // For center/admin/super_admin, fetch from DB
   useEffect(() => {
-    if (!user || role !== 'center') return;
-    const fetchBankDetails = async () => {
+    if (!user || role === 'student') return;
+    const fetch = async () => {
       const { data } = await supabase
-        .from('center_bank_details' as any)
+        .from('bank_details' as any)
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
-      setCenterBankDetails(data);
+      setBankDetails(data);
     };
-    fetchBankDetails();
+    fetch();
   }, [user, role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,60 +57,60 @@ export default function WithdrawalRequestForm({ walletId, balance, onSuccess }: 
       return;
     }
 
-    const studentBankDetails = getStudentBankDetails();
+    const studentBD = getStudentBankDetails();
 
-    // For students, require bank details from localStorage
-    if (role === 'student' && !studentBankDetails) {
+    // Validate bank details by role
+    if (role === 'student' && !studentBD) {
       toast.error('Please save your bank details first in the Bank Details tab');
       return;
     }
-
-    // For centers, require bank details from DB
-    if (role === 'center' && !centerBankDetails) {
+    if ((role === 'center' || role === 'admin' || role === 'super_admin') && !bankDetails) {
       toast.error('Please add your bank details first in the Bank Details tab');
       return;
     }
 
-    // For admins, require UPI
-    if (role !== 'student' && role !== 'center' && !upiId.trim()) {
-      toast.error('Please enter UPI ID');
-      return;
-    }
-
-    // Check for pending requests (prevent duplicates)
-    const { data: pendingReqs } = await supabase
-      .from('withdrawal_requests' as any)
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('status', 'pending');
-    if ((pendingReqs as any[])?.length > 0) {
-      toast.error('You already have a pending withdrawal request. Please wait for it to be processed.');
-      return;
+    // Check for pending requests (prevent duplicates) - skip for super_admin
+    if (role !== 'super_admin') {
+      const { data: pendingReqs } = await supabase
+        .from('withdrawal_requests' as any)
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
+      if ((pendingReqs as any[])?.length > 0) {
+        toast.error('You already have a pending withdrawal request.');
+        return;
+      }
     }
 
     setLoading(true);
+
     const bankDetailsJson = role === 'student'
-      ? JSON.stringify(studentBankDetails)
-      : role === 'center' && centerBankDetails
+      ? JSON.stringify(studentBD)
+      : bankDetails
         ? JSON.stringify({
-            account_holder: (centerBankDetails as any).account_holder_name,
-            bank_name: (centerBankDetails as any).bank_name,
-            account_number: (centerBankDetails as any).account_number,
-            ifsc_code: (centerBankDetails as any).ifsc_code,
-            branch_name: (centerBankDetails as any).branch_name,
+            account_holder: (bankDetails as any).account_holder_name,
+            bank_name: (bankDetails as any).bank_name,
+            account_number: (bankDetails as any).account_number,
+            ifsc_code: (bankDetails as any).ifsc_code,
+            branch_name: (bankDetails as any).branch_name,
           })
         : null;
+
+    // Super Admin: auto-completed
+    const status = role === 'super_admin' ? 'completed' : 'pending';
 
     const insertData: any = {
       user_id: user.id,
       wallet_id: walletId,
       amount: numAmount,
-      upi_id: role === 'student'
-        ? (studentBankDetails?.upi_id || null)
-        : role === 'center'
-          ? null
-          : upiId.trim(),
+      upi_id: role === 'student' ? (studentBD?.upi_id || null) : null,
       bank_details: bankDetailsJson,
+      status,
+      ...(role === 'super_admin' ? {
+        processed_by: user.id,
+        processed_at: new Date().toISOString(),
+        admin_note: 'Self-withdrawal by Super Admin',
+      } : {}),
     };
 
     const { error } = await supabase.from('withdrawal_requests').insert(insertData);
@@ -118,7 +118,7 @@ export default function WithdrawalRequestForm({ walletId, balance, onSuccess }: 
     if (error) {
       toast.error('Request failed: ' + error.message);
     } else {
-      toast.success('Withdrawal request submitted!');
+      toast.success(role === 'super_admin' ? 'Withdrawal completed!' : 'Withdrawal request submitted!');
       setAmount('');
       setUpiId('');
       onSuccess();
@@ -126,52 +126,40 @@ export default function WithdrawalRequestForm({ walletId, balance, onSuccess }: 
     setLoading(false);
   };
 
-  const studentBankDetails = getStudentBankDetails();
+  const studentBD = getStudentBankDetails();
 
   const renderBankInfo = () => {
     if (role === 'student') {
-      if (!studentBankDetails) {
-        return <p className="text-xs text-destructive">⚠ Please save bank details in the Bank Details tab first.</p>;
-      }
+      if (!studentBD) return <p className="text-xs text-destructive">⚠ Please save bank details in the Bank Details tab first.</p>;
       return (
         <div className="text-xs text-muted-foreground bg-muted/50 rounded p-3 space-y-0.5">
           <p className="font-medium text-foreground text-sm mb-1">Bank Details</p>
-          <p>Name: {studentBankDetails.account_holder}</p>
-          <p>Bank: {studentBankDetails.bank_name}</p>
-          <p>A/C: {studentBankDetails.account_number}</p>
-          <p>IFSC: {studentBankDetails.ifsc_code}</p>
-          {studentBankDetails.upi_id && <p>UPI: {studentBankDetails.upi_id}</p>}
+          <p>Name: {studentBD.account_holder}</p>
+          <p>Bank: {studentBD.bank_name}</p>
+          <p>A/C: {studentBD.account_number}</p>
+          <p>IFSC: {studentBD.ifsc_code}</p>
+          {studentBD.upi_id && <p>UPI: {studentBD.upi_id}</p>}
         </div>
       );
     }
-    if (role === 'center') {
-      if (!centerBankDetails) {
-        return <p className="text-xs text-destructive">⚠ Please add bank details in the Bank Details tab first.</p>;
-      }
-      const bd = centerBankDetails as any;
-      return (
-        <div className="text-xs text-muted-foreground bg-muted/50 rounded p-3 space-y-0.5">
-          <p className="font-medium text-foreground text-sm mb-1">Bank Details</p>
-          <p>Name: {bd.account_holder_name}</p>
-          <p>Bank: {bd.bank_name}</p>
-          <p>A/C: {bd.account_number}</p>
-          <p>IFSC: {bd.ifsc_code}</p>
-          {bd.branch_name && <p>Branch: {bd.branch_name}</p>}
-        </div>
-      );
-    }
-    // Admin - UPI
+    // Center, Admin, Super Admin - DB bank details
+    if (!bankDetails) return <p className="text-xs text-destructive">⚠ Please add bank details in the Bank Details tab first.</p>;
+    const bd = bankDetails as any;
     return (
-      <div className="space-y-2">
-        <Label htmlFor="upi" className="text-sm">UPI ID</Label>
-        <Input id="upi" type="text" placeholder="example@upi" value={upiId} onChange={(e) => setUpiId(e.target.value)} />
+      <div className="text-xs text-muted-foreground bg-muted/50 rounded p-3 space-y-0.5">
+        <p className="font-medium text-foreground text-sm mb-1">Bank Details</p>
+        <p>Name: {bd.account_holder_name}</p>
+        <p>Bank: {bd.bank_name}</p>
+        <p>A/C: {bd.account_number}</p>
+        <p>IFSC: {bd.ifsc_code}</p>
+        {bd.branch_name && <p>Branch: {bd.branch_name}</p>}
       </div>
     );
   };
 
   const isDisabled = loading
-    || (role === 'student' && !studentBankDetails)
-    || (role === 'center' && !centerBankDetails);
+    || (role === 'student' && !studentBD)
+    || (role !== 'student' && !bankDetails);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -188,11 +176,12 @@ export default function WithdrawalRequestForm({ walletId, balance, onSuccess }: 
           step="0.01"
         />
       </div>
-
       {renderBankInfo()}
-
+      {role === 'super_admin' && (
+        <p className="text-xs text-primary">✓ As Super Admin, withdrawal will be auto-completed.</p>
+      )}
       <Button type="submit" disabled={isDisabled} className="w-full">
-        {loading ? 'Submitting...' : 'Request Withdrawal'}
+        {loading ? 'Submitting...' : role === 'super_admin' ? 'Withdraw Now' : 'Request Withdrawal'}
       </Button>
     </form>
   );

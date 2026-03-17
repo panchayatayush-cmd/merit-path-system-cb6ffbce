@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import WithdrawButton from '@/components/WithdrawButton';
 import WithdrawalHistory from '@/components/WithdrawalHistory';
-import CenterBankDetailsForm from '@/components/CenterBankDetailsForm';
+import RoleBankDetailsForm from '@/components/RoleBankDetailsForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function CenterEarningsPage() {
@@ -44,9 +44,8 @@ export default function CenterEarningsPage() {
       setWithdrawals((wr as any[]) ?? []);
     }
 
-    // Check bank details
     const { data: bd } = await supabase
-      .from('center_bank_details' as any)
+      .from('bank_details' as any)
       .select('id')
       .eq('user_id', user.id)
       .maybeSingle();
@@ -93,7 +92,7 @@ export default function CenterEarningsPage() {
           <TabsContent value="bank" className="mt-4">
             <div className="card-shadow rounded-lg bg-card p-6">
               <h2 className="text-sm font-semibold text-foreground mb-4">Bank Details</h2>
-              <CenterBankDetailsForm />
+              <RoleBankDetailsForm />
             </div>
           </TabsContent>
 
