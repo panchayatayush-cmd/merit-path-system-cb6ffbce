@@ -108,11 +108,13 @@ export type Database = {
           mobile: string | null
           owner_block: string | null
           owner_district: string | null
+          owner_name: string | null
           owner_pin_code: string | null
           owner_state: string | null
           owner_tahsil: string | null
           owner_village: string | null
           payment_verified: boolean | null
+          status: string
           updated_at: string
           user_id: string
         }
@@ -129,11 +131,13 @@ export type Database = {
           mobile?: string | null
           owner_block?: string | null
           owner_district?: string | null
+          owner_name?: string | null
           owner_pin_code?: string | null
           owner_state?: string | null
           owner_tahsil?: string | null
           owner_village?: string | null
           payment_verified?: boolean | null
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -150,11 +154,13 @@ export type Database = {
           mobile?: string | null
           owner_block?: string | null
           owner_district?: string | null
+          owner_name?: string | null
           owner_pin_code?: string | null
           owner_state?: string | null
           owner_tahsil?: string | null
           owner_village?: string | null
           payment_verified?: boolean | null
+          status?: string
           updated_at?: string
           user_id?: string
         }

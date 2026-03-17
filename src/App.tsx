@@ -33,6 +33,8 @@ import CenterEarningsPage from "./pages/center/CenterEarningsPage";
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCentersPage from "./pages/admin/AdminCentersPage";
+import AdminCreateCenterPage from "./pages/admin/AdminCreateCenterPage";
+import AdminMyCentersPage from "./pages/admin/AdminMyCentersPage";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
@@ -45,6 +47,7 @@ import SuperAdminSyllabusPage from "./pages/superadmin/SuperAdminSyllabusPage";
 import SuperAdminAIExamPage from "./pages/superadmin/SuperAdminAIExamPage";
 import SuperAdminExamSchedulerPage from "./pages/superadmin/SuperAdminExamSchedulerPage";
 import SuperAdminNotificationsPage from "./pages/superadmin/SuperAdminNotificationsPage";
+import SuperAdminCenterApprovalsPage from "./pages/superadmin/SuperAdminCenterApprovalsPage";
 // Public pages
 import Index from "./pages/Index";
 import AboutUsPage from "./pages/AboutUsPage";
@@ -95,6 +98,8 @@ const App = () => (
             {/* Admin */}
             <Route path="/admin" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminDashboard /></RoleGuard>} />
             <Route path="/admin/centers" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminCentersPage /></RoleGuard>} />
+            <Route path="/admin/create-center" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminCreateCenterPage /></RoleGuard>} />
+            <Route path="/admin/my-centers" element={<RoleGuard allowedRoles={['admin', 'super_admin']}><AdminMyCentersPage /></RoleGuard>} />
 
             {/* Super Admin */}
             <Route path="/super-admin" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
@@ -107,6 +112,7 @@ const App = () => (
             <Route path="/super-admin/ai-exam" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminAIExamPage /></RoleGuard>} />
             <Route path="/super-admin/exam-scheduler" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminExamSchedulerPage /></RoleGuard>} />
             <Route path="/super-admin/notifications" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminNotificationsPage /></RoleGuard>} />
+            <Route path="/super-admin/center-approvals" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminCenterApprovalsPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />

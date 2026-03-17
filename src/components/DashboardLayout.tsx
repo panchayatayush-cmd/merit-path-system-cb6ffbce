@@ -23,6 +23,8 @@ import {
   Calendar,
   Bell,
   MessageCircle,
+  Plus,
+  CheckSquare,
 } from 'lucide-react';
 
 interface NavItem {
@@ -53,6 +55,8 @@ const centerNav: NavItem[] = [
 const adminNav: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Centers', href: '/admin/centers', icon: <Building2 className="h-4 w-4" /> },
+  { label: 'Create Center', href: '/admin/create-center', icon: <Plus className="h-4 w-4" /> },
+  { label: 'My Centers', href: '/admin/my-centers', icon: <Building2 className="h-4 w-4" /> },
 ];
 
 const superAdminNav: NavItem[] = [
@@ -63,6 +67,7 @@ const superAdminNav: NavItem[] = [
   { label: 'AI Exam', href: '/super-admin/ai-exam', icon: <Sparkles className="h-4 w-4" /> },
   { label: 'Scheduler', href: '/super-admin/exam-scheduler', icon: <Calendar className="h-4 w-4" /> },
   { label: 'Notifications', href: '/super-admin/notifications', icon: <Bell className="h-4 w-4" /> },
+  { label: 'Center Approvals', href: '/super-admin/center-approvals', icon: <CheckSquare className="h-4 w-4" /> },
   { label: 'Payments', href: '/super-admin/payments', icon: <CreditCard className="h-4 w-4" /> },
   { label: 'Wallets', href: '/super-admin/wallets', icon: <Wallet className="h-4 w-4" /> },
   { label: 'Withdrawals', href: '/super-admin/withdrawals', icon: <ArrowDownToLine className="h-4 w-4" /> },
