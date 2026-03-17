@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageToggle from '@/components/LanguageToggle';
 import { Button } from '@/components/ui/button';
 import {
   BookOpen, Shield, Award, Users, Trophy, Gift, TrendingUp, Star,
