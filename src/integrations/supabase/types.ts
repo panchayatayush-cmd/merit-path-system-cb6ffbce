@@ -23,6 +23,7 @@ export type Database = {
           generated_by: string
           id: string
           is_approved: boolean
+          lesson_id: string | null
           options: Json
           points: number
           question_text: string
@@ -38,6 +39,7 @@ export type Database = {
           generated_by?: string
           id?: string
           is_approved?: boolean
+          lesson_id?: string | null
           options?: Json
           points?: number
           question_text: string
@@ -53,6 +55,7 @@ export type Database = {
           generated_by?: string
           id?: string
           is_approved?: boolean
+          lesson_id?: string | null
           options?: Json
           points?: number
           question_text?: string
@@ -66,6 +69,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generated_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_lessons"
             referencedColumns: ["id"]
           },
           {
@@ -900,6 +910,57 @@ export type Database = {
           is_active?: boolean
         }
         Relationships: []
+      }
+      syllabus_lessons: {
+        Row: {
+          class_id: string
+          created_at: string
+          extracted_text: string | null
+          file_name: string | null
+          id: string
+          lesson_name: string
+          pdf_file_path: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          extracted_text?: string | null
+          file_name?: string | null
+          id?: string
+          lesson_name: string
+          pdf_file_path: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          extracted_text?: string | null
+          file_name?: string | null
+          id?: string
+          lesson_name?: string
+          pdf_file_path?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllabus_lessons_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syllabus_lessons_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "syllabus_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       syllabus_pdfs: {
         Row: {
