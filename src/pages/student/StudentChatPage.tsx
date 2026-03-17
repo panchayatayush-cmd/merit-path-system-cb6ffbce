@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Send, Bot, User, Sparkles, Loader2, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -35,6 +36,8 @@ export default function StudentChatPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [dailyRemaining, setDailyRemaining] = useState<number | null>(null);
+  const [dailyLimit, setDailyLimit] = useState<number>(50);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
@@ -47,8 +50,36 @@ export default function StudentChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Fetch daily remaining on mount
+  const fetchLimit = useCallback(async () => {
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ checkLimit: true }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setDailyRemaining(data.remaining);
+        setDailyLimit(data.limit);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchLimit();
+  }, [fetchLimit]);
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
+    if (dailyRemaining !== null && dailyRemaining <= 0) {
+      toast.error('Daily message limit reached. Please try again tomorrow.');
+      return;
+    }
+
     const userMsg: Msg = { role: 'user', content: text.trim() };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
@@ -58,7 +89,6 @@ export default function StudentChatPage() {
     const allMessages = [...messages, userMsg];
 
     try {
-      // Persist user message & get conversation id
       const convId = await persistUserMessage(text.trim());
 
       const resp = await fetch(CHAT_URL, {
@@ -72,8 +102,17 @@ export default function StudentChatPage() {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: 'AI service error' }));
+        if (err.limitReached) {
+          setDailyRemaining(0);
+        }
         throw new Error(err.error || `Error ${resp.status}`);
       }
+
+      // Update remaining from response headers
+      const remaining = resp.headers.get('X-Daily-Remaining');
+      const limit = resp.headers.get('X-Daily-Limit');
+      if (remaining !== null) setDailyRemaining(Number(remaining));
+      if (limit !== null) setDailyLimit(Number(limit));
 
       if (!resp.body) throw new Error('No response stream');
 
@@ -145,7 +184,6 @@ export default function StudentChatPage() {
         }
       }
 
-      // Persist final assistant response
       if (assistantSoFar) {
         await persistAssistantMessage(convId, assistantSoFar);
       }
@@ -164,6 +202,8 @@ export default function StudentChatPage() {
     e.preventDefault();
     sendMessage(input);
   };
+
+  const limitExhausted = dailyRemaining !== null && dailyRemaining <= 0;
 
   return (
     <DashboardLayout>
@@ -198,10 +238,15 @@ export default function StudentChatPage() {
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-sm font-semibold text-foreground">AI Study Helper</h1>
               <p className="text-[10px] text-muted-foreground">Ask any exam-related question</p>
             </div>
+            {dailyRemaining !== null && (
+              <Badge variant={limitExhausted ? 'destructive' : 'secondary'} className="text-[10px] shrink-0">
+                {limitExhausted ? 'Limit reached' : `${dailyRemaining}/${dailyLimit} left today`}
+              </Badge>
+            )}
           </div>
 
           {/* Messages */}
@@ -220,7 +265,8 @@ export default function StudentChatPage() {
                     <button
                       key={q}
                       onClick={() => sendMessage(q)}
-                      className="text-left text-xs px-3 py-2 rounded-lg border border-border bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
+                      disabled={limitExhausted}
+                      className="text-left text-xs px-3 py-2 rounded-lg border border-border bg-secondary/50 hover:bg-secondary text-foreground transition-colors disabled:opacity-50"
                     >
                       {q}
                     </button>
@@ -278,11 +324,11 @@ export default function StudentChatPage() {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Apna sawaal yahan likhein..."
-              disabled={isLoading}
+              placeholder={limitExhausted ? 'Daily limit reached — try again tomorrow' : 'Apna sawaal yahan likhein...'}
+              disabled={isLoading || limitExhausted}
               className="flex-1"
             />
-            <Button type="submit" disabled={isLoading || !input.trim()} size="icon">
+            <Button type="submit" disabled={isLoading || !input.trim() || limitExhausted} size="icon">
               <Send className="h-4 w-4" />
             </Button>
           </form>
