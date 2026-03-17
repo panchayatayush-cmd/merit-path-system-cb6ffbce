@@ -20,6 +20,7 @@ import ExamPage from "./pages/student/ExamPage";
 import StudentResultsPage from "./pages/student/StudentResultsPage";
 import StudentCertificatePage from "./pages/student/StudentCertificatePage";
 import StudentWalletPage from "./pages/student/StudentWalletPage";
+import StudentChatPage from "./pages/student/StudentChatPage";
 
 // Center pages
 import CenterDashboard from "./pages/center/CenterDashboard";
@@ -80,6 +81,7 @@ const App = () => (
             <Route path="/student/results" element={<RoleGuard allowedRoles={['student']}><StudentResultsPage /></RoleGuard>} />
             <Route path="/student/certificate" element={<RoleGuard allowedRoles={['student']}><StudentCertificatePage /></RoleGuard>} />
             <Route path="/student/wallet" element={<RoleGuard allowedRoles={['student']}><StudentWalletPage /></RoleGuard>} />
+            <Route path="/student/chat" element={<RoleGuard allowedRoles={['student']}><StudentChatPage /></RoleGuard>} />
 
             {/* Center */}
             <Route path="/center" element={<RoleGuard allowedRoles={['center']}><CenterDashboard /></RoleGuard>} />
