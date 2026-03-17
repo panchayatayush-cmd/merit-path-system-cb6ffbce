@@ -46,9 +46,15 @@ export default function SuperAdminSyllabusPage() {
 
   const addClass = async () => {
     if (!newClassName.trim() || !newClassNumber.trim()) return;
+    const num = parseInt(newClassNumber);
+    const exists = classes.find(c => c.class_number === num);
+    if (exists) {
+      toast({ title: 'Error', description: `Class ${num} already exists (${exists.class_name})`, variant: 'destructive' });
+      return;
+    }
     const { error } = await supabase.from('syllabus_classes').insert({
       class_name: newClassName.trim(),
-      class_number: parseInt(newClassNumber),
+      class_number: num,
     } as any);
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
     setNewClassName(''); setNewClassNumber('');
