@@ -48,10 +48,7 @@ const centerNav: NavItem[] = [
 
 const adminNav: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Students', href: '/admin/students', icon: <Users className="h-4 w-4" /> },
   { label: 'Centers', href: '/admin/centers', icon: <Building2 className="h-4 w-4" /> },
-  { label: 'Payments', href: '/admin/payments', icon: <CreditCard className="h-4 w-4" /> },
-  { label: 'Results', href: '/admin/results', icon: <FileText className="h-4 w-4" /> },
 ];
 
 const superAdminNav: NavItem[] = [
