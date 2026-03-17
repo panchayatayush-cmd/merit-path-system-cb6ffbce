@@ -22,6 +22,7 @@ import StudentResultsPage from "./pages/student/StudentResultsPage";
 import StudentCertificatePage from "./pages/student/StudentCertificatePage";
 import StudentWalletPage from "./pages/student/StudentWalletPage";
 import StudentChatPage from "./pages/student/StudentChatPage";
+import StudentSyllabusPage from "./pages/student/StudentSyllabusPage";
 
 // Center pages
 import CenterDashboard from "./pages/center/CenterDashboard";
