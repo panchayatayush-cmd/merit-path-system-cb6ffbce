@@ -63,7 +63,7 @@ const adminNav: NavItem[] = [
 
 const superAdminNav: NavItem[] = [
   { label: 'Dashboard', href: '/super-admin', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Users', href: '/super-admin/users', icon: <Users className="h-4 w-4" /> },
+  { label: 'Students', href: '/super-admin/students', icon: <Users className="h-4 w-4" /> },
   { label: 'Admins', href: '/super-admin/admins', icon: <Shield className="h-4 w-4" /> },
   { label: 'Syllabus', href: '/super-admin/syllabus', icon: <BookOpen className="h-4 w-4" /> },
   { label: 'AI Exam', href: '/super-admin/ai-exam', icon: <Sparkles className="h-4 w-4" /> },
