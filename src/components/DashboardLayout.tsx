@@ -84,6 +84,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { role, user, signOut } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const navItems = navMap[role ?? 'student'] ?? studentNav;
 
