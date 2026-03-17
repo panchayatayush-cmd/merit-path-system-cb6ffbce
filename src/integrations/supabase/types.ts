@@ -87,6 +87,7 @@ export type Database = {
       centers: {
         Row: {
           address: string | null
+          admin_id: string | null
           center_code: string
           center_name: string
           contact_person: string | null
@@ -107,6 +108,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          admin_id?: string | null
           center_code: string
           center_name: string
           contact_person?: string | null
@@ -127,6 +129,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          admin_id?: string | null
           center_code?: string
           center_name?: string
           contact_person?: string | null
