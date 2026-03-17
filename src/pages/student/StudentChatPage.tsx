@@ -21,6 +21,7 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export default function StudentChatPage() {
+  const { session } = useAuth();
   const {
     conversations,
     activeConversationId,
