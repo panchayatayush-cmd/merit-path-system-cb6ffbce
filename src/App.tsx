@@ -30,11 +30,7 @@ import CenterEarningsPage from "./pages/center/CenterEarningsPage";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
-import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
 import AdminCentersPage from "./pages/admin/AdminCentersPage";
-import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
-import AdminResultsPage from "./pages/admin/AdminResultsPage";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
