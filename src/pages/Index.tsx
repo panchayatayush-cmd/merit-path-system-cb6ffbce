@@ -51,8 +51,8 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <img src={gphdmLogo} alt="GPHDM Logo" className="h-10 w-10 rounded-full object-cover" />
             <div>
-              <h1 className="text-sm font-bold text-foreground leading-tight">GPHDM National Scholarship</h1>
-              <p className="text-[10px] text-muted-foreground leading-tight">Gram Panchayat Help Desk Mission</p>
+              <h1 className="text-sm font-bold text-foreground leading-tight">{t('gphdmTitle')}</h1>
+              <p className="text-[10px] text-muted-foreground leading-tight">{t('gphdmSubtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
