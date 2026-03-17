@@ -56,7 +56,7 @@ export default function Index() {
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
-            {/* Desktop nav links */}
+            <LanguageToggle />
             <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">About</Link>
             <Link to="/gallery" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Gallery</Link>
             <Link to="/verify" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Verify</Link>
