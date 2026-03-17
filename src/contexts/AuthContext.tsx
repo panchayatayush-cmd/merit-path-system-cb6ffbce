@@ -78,7 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      // Even if server-side logout fails (e.g. expired session), clear local state
+      console.warn('Sign out error (ignored):', e);
+    }
     setUser(null);
     setSession(null);
     setRole(null);
