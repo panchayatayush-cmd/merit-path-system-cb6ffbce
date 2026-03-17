@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,11 +7,91 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const DAILY_MESSAGE_LIMIT = 50;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const authHeader = req.headers.get("authorization") ?? "";
+    const token = authHeader.replace("Bearer ", "");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { messages, checkLimit } = await req.json();
+
+    // If client is just checking the remaining limit
+    if (checkLimit) {
+      const todayStart = new Date();
+      todayStart.setUTCHours(0, 0, 0, 0);
+
+      const { count } = await supabase
+        .from("chat_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "user")
+        .gte("created_at", todayStart.toISOString())
+        .in(
+          "conversation_id",
+          // subquery: get user's conversation ids
+          (await supabase
+            .from("chat_conversations")
+            .select("id")
+            .eq("user_id", user.id)
+          ).data?.map((c: any) => c.id) ?? []
+        );
+
+      return new Response(
+        JSON.stringify({ remaining: Math.max(0, DAILY_MESSAGE_LIMIT - (count ?? 0)), limit: DAILY_MESSAGE_LIMIT }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Count today's user messages
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+
+    const convRes = await supabase
+      .from("chat_conversations")
+      .select("id")
+      .eq("user_id", user.id);
+    const convIds = convRes.data?.map((c: any) => c.id) ?? [];
+
+    let todayCount = 0;
+    if (convIds.length > 0) {
+      const { count } = await supabase
+        .from("chat_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "user")
+        .gte("created_at", todayStart.toISOString())
+        .in("conversation_id", convIds);
+      todayCount = count ?? 0;
+    }
+
+    if (todayCount >= DAILY_MESSAGE_LIMIT) {
+      return new Response(
+        JSON.stringify({
+          error: `Daily message limit reached (${DAILY_MESSAGE_LIMIT} messages). Please try again tomorrow.`,
+          limitReached: true,
+          remaining: 0,
+          limit: DAILY_MESSAGE_LIMIT,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -68,8 +149,16 @@ Rules:
       });
     }
 
+    // Include remaining count in response headers
+    const remaining = Math.max(0, DAILY_MESSAGE_LIMIT - todayCount - 1);
+
     return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "X-Daily-Remaining": String(remaining),
+        "X-Daily-Limit": String(DAILY_MESSAGE_LIMIT),
+      },
     });
   } catch (e) {
     console.error("student-chat error:", e);
