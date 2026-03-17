@@ -35,6 +35,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCentersPage from "./pages/admin/AdminCentersPage";
 import AdminCreateCenterPage from "./pages/admin/AdminCreateCenterPage";
 import AdminMyCentersPage from "./pages/admin/AdminMyCentersPage";
+import AdminCenterStudentsPage from "./pages/admin/AdminCenterStudentsPage";
 
 // Super Admin pages
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
