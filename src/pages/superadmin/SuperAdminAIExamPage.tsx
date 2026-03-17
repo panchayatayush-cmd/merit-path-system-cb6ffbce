@@ -76,7 +76,8 @@ export default function SuperAdminAIExamPage() {
 
     setUploading(true);
     try {
-      const filePath = `${selectedClass}/${Date.now()}_${file.name}`;
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${selectedClass}/${Date.now()}_${safeName}`;
       const { error: uploadErr } = await supabase.storage.from('syllabus-pdfs').upload(filePath, file);
       if (uploadErr) throw uploadErr;
 
