@@ -45,6 +45,7 @@ import ManageAdminsPage from "./pages/superadmin/ManageAdminsPage";
 import SuperAdminPaymentsPage from "./pages/superadmin/SuperAdminPaymentsPage";
 import SuperAdminWalletsPage from "./pages/superadmin/SuperAdminWalletsPage";
 import SuperAdminWithdrawalsPage from "./pages/superadmin/SuperAdminWithdrawalsPage";
+import SuperAdminMyWalletPage from "./pages/superadmin/SuperAdminMyWalletPage";
 import SuperAdminGalleryPage from "./pages/superadmin/SuperAdminGalleryPage";
 import SuperAdminSyllabusPage from "./pages/superadmin/SuperAdminSyllabusPage";
 import SuperAdminAIExamPage from "./pages/superadmin/SuperAdminAIExamPage";
