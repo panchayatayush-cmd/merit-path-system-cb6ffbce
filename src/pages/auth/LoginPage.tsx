@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageToggle from '@/components/LanguageToggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,9 +14,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, user, role } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
-  // Redirect after role is loaded
   useEffect(() => {
     if (user && role) {
       const dashboardMap: Record<string, string> = {
@@ -44,52 +46,41 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 px-4">
       <div className="w-full max-w-md card-shadow rounded-lg bg-card p-8 animate-fade-in">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
-          <ChevronLeft className="h-3 w-3" /> Home
-        </Link>
-        <h1 className="text-xl font-semibold text-foreground mb-1">Sign In</h1>
-        <p className="text-sm text-muted-foreground mb-6">Scholarship Examination 2026</p>
+        <div className="flex items-center justify-between mb-4">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ChevronLeft className="h-3 w-3" /> {t('home')}
+          </Link>
+          <LanguageToggle />
+        </div>
+        <h1 className="text-xl font-semibold text-foreground mb-1">{t('signIn')}</h1>
+        <p className="text-sm text-muted-foreground mb-6">{t('scholarshipExam2026')}</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="you@example.com"
-            />
+            <Label htmlFor="email">{t('email')}</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder={t('emailPlaceholder')} />
           </div>
 
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Enter your password"
-            />
+            <Label htmlFor="password">{t('password')}</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder={t('enterYourPassword')} />
           </div>
 
           <div className="flex justify-end">
             <Link to="/auth/forgot-password" className="text-sm text-accent hover:underline">
-              Forgot password?
+              {t('forgotPassword')}
             </Link>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('signingIn') : t('signIn')}
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
+          {t('dontHaveAccount')}{' '}
           <Link to="/auth/register" className="text-accent hover:underline">
-            Create one
+            {t('createOne')}
           </Link>
         </p>
       </div>

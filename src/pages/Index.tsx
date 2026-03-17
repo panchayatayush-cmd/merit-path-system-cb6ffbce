@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageToggle from '@/components/LanguageToggle';
 import { Button } from '@/components/ui/button';
 import {
   BookOpen, Shield, Award, Users, Trophy, Gift, TrendingUp, Star,
@@ -32,6 +34,7 @@ const faqItems = [
 export default function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, role } = useAuth();
+  const { t } = useLanguage();
 
   const dashboardMap: Record<string, string> = {
     student: '/student',
@@ -48,12 +51,12 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <img src={gphdmLogo} alt="GPHDM Logo" className="h-10 w-10 rounded-full object-cover" />
             <div>
-              <h1 className="text-sm font-bold text-foreground leading-tight">GPHDM National Scholarship</h1>
-              <p className="text-[10px] text-muted-foreground leading-tight">Gram Panchayat Help Desk Mission</p>
+              <h1 className="text-sm font-bold text-foreground leading-tight">{t('gphdmTitle')}</h1>
+              <p className="text-[10px] text-muted-foreground leading-tight">{t('gphdmSubtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
-            {/* Desktop nav links */}
+            <LanguageToggle />
             <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">About</Link>
             <Link to="/gallery" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Gallery</Link>
             <Link to="/verify" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:inline">Verify</Link>

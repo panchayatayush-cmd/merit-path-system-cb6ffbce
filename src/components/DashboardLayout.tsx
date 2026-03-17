@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageToggle from '@/components/LanguageToggle';
 import NotificationBell from '@/components/NotificationBell';
 import {
   LayoutDashboard,
@@ -82,6 +84,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { role, user, signOut } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const navItems = navMap[role ?? 'student'] ?? studentNav;
 
@@ -98,10 +101,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <aside className="hidden lg:flex w-60 flex-col bg-sidebar border-r border-sidebar-border">
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-sidebar-foreground">Scholarship Exam</h2>
+            <h2 className="text-sm font-semibold text-sidebar-foreground">{t('scholarshipExam')}</h2>
             <p className="text-xs text-sidebar-foreground/60 mt-0.5">{roleLabel[role ?? ''] ?? ''}</p>
           </div>
-          <NotificationBell />
+          <div className="flex items-center gap-1">
+            <LanguageToggle />
+            <NotificationBell />
+          </div>
         </div>
         <nav className="flex-1 p-2 space-y-0.5">
           {navItems.map((item) => {
@@ -131,7 +137,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all duration-150"
           >
             <LogOut className="h-4 w-4" />
-            Sign Out
+            {t('signOut')}
           </button>
         </div>
       </aside>
@@ -140,11 +146,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <main className="flex-1 flex flex-col min-h-screen">
         {/* Mobile header */}
         <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-          <h2 className="text-sm font-semibold text-foreground">Scholarship Exam</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t('scholarshipExam')}</h2>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <NotificationBell />
             <button onClick={signOut} className="text-sm text-muted-foreground hover:text-foreground">
-              Sign Out
+              {t('signOut')}
             </button>
           </div>
         </header>
