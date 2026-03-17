@@ -51,7 +51,7 @@ export default function CenterEarningsPage() {
           <p className="text-3xl font-bold tabular-nums tracking-tighter text-primary mt-1">
             ₹{balance.toFixed(2)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">₹30 per student referral</p>
+          <p className="text-xs text-muted-foreground mt-1">₹40 per student referral</p>
         </div>
 
         {/* Withdraw Button */}
