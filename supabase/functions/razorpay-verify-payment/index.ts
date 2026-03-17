@@ -114,7 +114,7 @@ serve(async (req) => {
 
     const orderType = updatedOrder?.order_type;
 
-    // If center registration, activate center AND distribute ₹500
+    // If center registration (self-signup by center owner), activate center AND distribute ₹500
     if (orderType === "center_registration") {
       // Activate center
       const { data: centerData } = await serviceClient
@@ -162,6 +162,44 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, message: "Center payment verified, activated, and commissions distributed" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // If admin_center_creation, distribute ₹200 to admin and ₹300 to super admin
+    if (orderType === "admin_center_creation") {
+      // Credit ADMIN ₹200
+      await creditWallet(serviceClient, user.id, "admin", CENTER_REG_COMMISSION.ADMIN, "Center creation commission - ₹200");
+      await serviceClient.from("commissions").insert({
+        student_id: user.id,
+        payment_id: db_order_id,
+        role: "admin",
+        commission_amount: CENTER_REG_COMMISSION.ADMIN,
+        description: "Admin share from center creation fee",
+      });
+
+      // Credit SUPER ADMIN ₹300
+      const { data: superAdminRoles } = await serviceClient
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "super_admin");
+
+      if (superAdminRoles && superAdminRoles.length > 0) {
+        const perSA = CENTER_REG_COMMISSION.SUPER_ADMIN / superAdminRoles.length;
+        for (const sa of superAdminRoles) {
+          await creditWallet(serviceClient, sa.user_id, "super_admin", perSA, "Center creation share - ₹300");
+          await serviceClient.from("commissions").insert({
+            student_id: user.id,
+            payment_id: db_order_id,
+            role: "super_admin",
+            commission_amount: perSA,
+            description: "Super Admin share from admin center creation fee",
+          });
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Admin center creation payment verified and commissions distributed" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
