@@ -56,7 +56,7 @@ export default function RegisterPage() {
 
         // Validate Student Referral Code if provided
         if (studentReferralCode.trim()) {
-          const refCode = studentReferralCode.trim().toUpperCase();
+          const refCode = studentReferralCode.trim();
           const { data: isValid } = await supabase.rpc('validate_referral_code', { _code: refCode });
           if (!isValid) {
             toast.error('Invalid Student Referral Code. Please check and try again.');
