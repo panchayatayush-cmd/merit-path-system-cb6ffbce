@@ -14,6 +14,7 @@ const MINIMUM_LIMITS: Record<string, number> = {
   student: 350,
   center: 1000,
   admin: 1500,
+  super_admin: 0,
 };
 
 interface WithdrawButtonProps {

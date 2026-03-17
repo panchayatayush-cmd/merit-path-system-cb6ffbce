@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import WithdrawButton from '@/components/WithdrawButton';
 import WithdrawalHistory from '@/components/WithdrawalHistory';
+import RoleBankDetailsForm from '@/components/RoleBankDetailsForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Wallet } from 'lucide-react';
 
 export default function AdminWalletPage() {
@@ -12,6 +14,7 @@ export default function AdminWalletPage() {
   const [walletId, setWalletId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [hasBankDetails, setHasBankDetails] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -38,6 +41,13 @@ export default function AdminWalletPage() {
         .order('created_at', { ascending: false });
       setWithdrawals((wr as any[]) ?? []);
     }
+
+    const { data: bd } = await supabase
+      .from('bank_details' as any)
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    setHasBankDetails(!!bd);
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
@@ -58,37 +68,60 @@ export default function AdminWalletPage() {
           <p className="text-xs text-muted-foreground mt-1">₹30 per student registration</p>
         </div>
 
-        {walletId && (
-          <WithdrawButton walletId={walletId} balance={balance} onSuccess={load} />
-        )}
+        <Tabs defaultValue="withdraw" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
+            <TabsTrigger value="bank">Bank Details</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
 
-        <div className="card-shadow rounded-lg bg-card p-6">
-          <h2 className="text-sm font-semibold text-foreground mb-4">Withdrawal Requests</h2>
-          <WithdrawalHistory requests={withdrawals} />
-        </div>
-
-        <div className="card-shadow rounded-lg bg-card p-6">
-          <h2 className="text-sm font-semibold text-foreground mb-4">Transaction History</h2>
-          {transactions.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No transactions yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {transactions.map((txn) => (
-                <div key={txn.id} className="flex justify-between items-center text-sm pb-2 border-b border-border last:border-0">
-                  <div>
-                    <p className="text-foreground">{txn.description ?? 'Commission'}</p>
-                    <p className="text-xs font-mono text-muted-foreground">
-                      {new Date(txn.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span className={`font-mono font-semibold ${txn.type === 'credit' ? 'text-primary' : 'text-destructive'}`}>
-                    {txn.type === 'credit' ? '+' : '-'}₹{Number(txn.amount).toFixed(2)}
-                  </span>
-                </div>
-              ))}
+          <TabsContent value="withdraw" className="space-y-4 mt-4">
+            {!hasBankDetails && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+                ⚠ Please add your bank details first before requesting a withdrawal.
+              </div>
+            )}
+            {walletId && (
+              <WithdrawButton walletId={walletId} balance={balance} onSuccess={load} />
+            )}
+            <div className="card-shadow rounded-lg bg-card p-6">
+              <h2 className="text-sm font-semibold text-foreground mb-4">Withdrawal Requests</h2>
+              <WithdrawalHistory requests={withdrawals} />
             </div>
-          )}
-        </div>
+          </TabsContent>
+
+          <TabsContent value="bank" className="mt-4">
+            <div className="card-shadow rounded-lg bg-card p-6">
+              <h2 className="text-sm font-semibold text-foreground mb-4">Bank Details</h2>
+              <RoleBankDetailsForm />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4">
+            <div className="card-shadow rounded-lg bg-card p-6">
+              <h2 className="text-sm font-semibold text-foreground mb-4">Transaction History</h2>
+              {transactions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No transactions yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map((txn) => (
+                    <div key={txn.id} className="flex justify-between items-center text-sm pb-2 border-b border-border last:border-0">
+                      <div>
+                        <p className="text-foreground">{txn.description ?? 'Commission'}</p>
+                        <p className="text-xs font-mono text-muted-foreground">
+                          {new Date(txn.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className={`font-mono font-semibold ${txn.type === 'credit' ? 'text-primary' : 'text-destructive'}`}>
+                        {txn.type === 'credit' ? '+' : '-'}₹{Number(txn.amount).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

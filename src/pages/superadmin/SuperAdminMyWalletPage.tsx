@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -7,11 +6,10 @@ import WithdrawButton from '@/components/WithdrawButton';
 import WithdrawalHistory from '@/components/WithdrawalHistory';
 import RoleBankDetailsForm from '@/components/RoleBankDetailsForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Wallet } from 'lucide-react';
 
-export default function CenterEarningsPage() {
+export default function SuperAdminMyWalletPage() {
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get('tab') || 'withdraw';
   const [balance, setBalance] = useState(0);
   const [walletId, setWalletId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -37,7 +35,7 @@ export default function CenterEarningsPage() {
       setTransactions(txns ?? []);
 
       const { data: wr } = await supabase
-        .from('withdrawal_requests' as any)
+        .from('withdrawal_requests')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -57,17 +55,19 @@ export default function CenterEarningsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-lg mx-auto space-y-6">
-        <h1 className="text-base font-semibold text-foreground">Earnings</h1>
+        <h1 className="text-base font-semibold text-foreground">My Wallet</h1>
 
         <div className="card-shadow rounded-lg bg-card p-6 text-center">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Earnings</p>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Wallet className="h-4 w-4 text-primary" />
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Balance</p>
+          </div>
           <p className="text-3xl font-bold tabular-nums tracking-tighter text-primary mt-1">
             ₹{balance.toFixed(2)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">₹40 per student referral</p>
         </div>
 
-        <Tabs defaultValue={defaultTab} className="w-full">
+        <Tabs defaultValue="withdraw" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
             <TabsTrigger value="bank">Bank Details</TabsTrigger>
@@ -77,14 +77,14 @@ export default function CenterEarningsPage() {
           <TabsContent value="withdraw" className="space-y-4 mt-4">
             {!hasBankDetails && (
               <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-                ⚠ Please add your bank details first before requesting a withdrawal.
+                ⚠ Please add your bank details first before withdrawing.
               </div>
             )}
             {walletId && (
               <WithdrawButton walletId={walletId} balance={balance} onSuccess={load} />
             )}
             <div className="card-shadow rounded-lg bg-card p-6">
-              <h2 className="text-sm font-semibold text-foreground mb-4">Withdrawal Requests</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-4">Withdrawal History</h2>
               <WithdrawalHistory requests={withdrawals} />
             </div>
           </TabsContent>
@@ -98,7 +98,7 @@ export default function CenterEarningsPage() {
 
           <TabsContent value="history" className="mt-4">
             <div className="card-shadow rounded-lg bg-card p-6">
-              <h2 className="text-sm font-semibold text-foreground mb-4">Transactions</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-4">Transaction History</h2>
               {transactions.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">No transactions yet.</p>
               ) : (
@@ -106,7 +106,7 @@ export default function CenterEarningsPage() {
                   {transactions.map((txn) => (
                     <div key={txn.id} className="flex justify-between items-center text-sm pb-2 border-b border-border last:border-0">
                       <div>
-                        <p className="text-foreground">{txn.description ?? 'Commission'}</p>
+                        <p className="text-foreground">{txn.description ?? 'Earning'}</p>
                         <p className="text-xs font-mono text-muted-foreground">
                           {new Date(txn.created_at).toLocaleDateString()}
                         </p>

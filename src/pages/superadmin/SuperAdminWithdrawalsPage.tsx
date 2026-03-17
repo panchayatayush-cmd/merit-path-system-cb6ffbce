@@ -13,6 +13,7 @@ export default function SuperAdminWithdrawalsPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [centers, setCenters] = useState<Record<string, any>>({});
+  const [roles, setRoles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [processing, setProcessing] = useState<string | null>(null);
@@ -28,9 +29,10 @@ export default function SuperAdminWithdrawalsPage() {
 
     const userIds = [...new Set(reqs.map(r => r.user_id))];
     if (userIds.length > 0) {
-      const [{ data: profs }, { data: ctrs }] = await Promise.all([
+      const [{ data: profs }, { data: ctrs }, { data: uroles }] = await Promise.all([
         supabase.from('profiles').select('user_id, full_name, mobile').in('user_id', userIds),
         supabase.from('centers').select('user_id, center_name, center_code').in('user_id', userIds),
+        supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
       ]);
       const profMap: Record<string, any> = {};
       (profs ?? []).forEach(p => { profMap[p.user_id] = p; });
@@ -38,6 +40,9 @@ export default function SuperAdminWithdrawalsPage() {
       const ctrMap: Record<string, any> = {};
       (ctrs ?? []).forEach(c => { ctrMap[c.user_id] = c; });
       setCenters(ctrMap);
+      const roleMap: Record<string, string> = {};
+      (uroles ?? []).forEach((r: any) => { roleMap[r.user_id] = r.role; });
+      setRoles(roleMap);
     }
     setLoading(false);
   };
@@ -99,7 +104,10 @@ export default function SuperAdminWithdrawalsPage() {
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <p className="text-lg font-bold tabular-nums text-foreground">₹{Number(r.amount).toFixed(2)}</p>
-            <p className="text-sm font-medium text-foreground">{getUserName(r.user_id)}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-foreground">{getUserName(r.user_id)}</p>
+              <Badge variant="outline" className="text-xs capitalize">{roles[r.user_id] || 'unknown'}</Badge>
+            </div>
             {centerCode && <p className="text-xs text-muted-foreground">Center: <span className="font-mono">{centerCode}</span></p>}
             <p className="text-xs text-muted-foreground">Phone: {getUserPhone(r.user_id)}</p>
             {r.upi_id && <p className="text-xs text-muted-foreground">UPI: <span className="font-mono">{r.upi_id}</span></p>}

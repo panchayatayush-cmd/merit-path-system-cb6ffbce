@@ -94,7 +94,7 @@ export type Database = {
           },
         ]
       }
-      center_bank_details: {
+      bank_details: {
         Row: {
           account_holder_name: string
           account_number: string

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
-export default function CenterBankDetailsForm() {
+export default function RoleBankDetailsForm() {
   const { user } = useAuth();
   const [accountHolder, setAccountHolder] = useState('');
   const [bankName, setBankName] = useState('');
@@ -20,7 +20,7 @@ export default function CenterBankDetailsForm() {
     if (!user) return;
     const load = async () => {
       const { data } = await supabase
-        .from('center_bank_details' as any)
+        .from('bank_details' as any)
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
@@ -65,11 +65,11 @@ export default function CenterBankDetailsForm() {
     let error;
     if (existing) {
       ({ error } = await supabase
-        .from('center_bank_details' as any)
+        .from('bank_details' as any)
         .update(payload)
         .eq('user_id', user.id));
     } else {
-      ({ error } = await supabase.from('center_bank_details' as any).insert(payload));
+      ({ error } = await supabase.from('bank_details' as any).insert(payload));
     }
 
     if (error) {
@@ -84,24 +84,24 @@ export default function CenterBankDetailsForm() {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="ch-holder" className="text-sm">Account Holder Name *</Label>
-        <Input id="ch-holder" value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} placeholder="Full name as per bank" />
+        <Label htmlFor="bd-holder" className="text-sm">Account Holder Name *</Label>
+        <Input id="bd-holder" value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} placeholder="Full name as per bank" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="ch-bank" className="text-sm">Bank Name *</Label>
-        <Input id="ch-bank" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. State Bank of India" />
+        <Label htmlFor="bd-bank" className="text-sm">Bank Name *</Label>
+        <Input id="bd-bank" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. State Bank of India" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="ch-acc" className="text-sm">Account Number *</Label>
-        <Input id="ch-acc" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter account number" />
+        <Label htmlFor="bd-acc" className="text-sm">Account Number *</Label>
+        <Input id="bd-acc" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter account number" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="ch-ifsc" className="text-sm">IFSC Code *</Label>
-        <Input id="ch-ifsc" value={ifscCode} onChange={(e) => setIfscCode(e.target.value.toUpperCase())} placeholder="e.g. SBIN0001234" maxLength={11} />
+        <Label htmlFor="bd-ifsc" className="text-sm">IFSC Code *</Label>
+        <Input id="bd-ifsc" value={ifscCode} onChange={(e) => setIfscCode(e.target.value.toUpperCase())} placeholder="e.g. SBIN0001234" maxLength={11} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="ch-branch" className="text-sm">Branch Name (Optional)</Label>
-        <Input id="ch-branch" value={branchName} onChange={(e) => setBranchName(e.target.value)} placeholder="e.g. Main Branch" />
+        <Label htmlFor="bd-branch" className="text-sm">Branch Name (Optional)</Label>
+        <Input id="bd-branch" value={branchName} onChange={(e) => setBranchName(e.target.value)} placeholder="e.g. Main Branch" />
       </div>
       <Button onClick={handleSave} disabled={loading} className="w-full">
         {loading ? 'Saving...' : existing ? 'Update Bank Details' : 'Save Bank Details'}
