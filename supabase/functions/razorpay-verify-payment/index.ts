@@ -213,7 +213,7 @@ serve(async (req) => {
           center_code: profile.center_code,
           payment_id: db_order_id,
           role: "center",
-          commission_amount: COMMISSION.CENTER,
+          commission_amount: EXAM_COMMISSION.CENTER,
           description: "Center commission from student exam fee",
         });
       }
