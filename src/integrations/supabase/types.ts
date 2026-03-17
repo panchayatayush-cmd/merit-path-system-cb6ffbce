@@ -98,12 +98,19 @@ export type Database = {
         Row: {
           address: string | null
           admin_id: string | null
+          capacity: number | null
           center_code: string
           center_name: string
+          center_type: string | null
+          city: string | null
           contact_person: string | null
           created_at: string
+          district: string | null
           email: string | null
+          established_year: number | null
+          full_address: string | null
           id: string
+          institute_name: string | null
           is_active: boolean | null
           mobile: string | null
           owner_block: string | null
@@ -115,6 +122,8 @@ export type Database = {
           owner_village: string | null
           payment_utr: string | null
           payment_verified: boolean | null
+          pincode: string | null
+          state: string | null
           status: string
           updated_at: string
           user_id: string
@@ -122,12 +131,19 @@ export type Database = {
         Insert: {
           address?: string | null
           admin_id?: string | null
+          capacity?: number | null
           center_code: string
           center_name: string
+          center_type?: string | null
+          city?: string | null
           contact_person?: string | null
           created_at?: string
+          district?: string | null
           email?: string | null
+          established_year?: number | null
+          full_address?: string | null
           id?: string
+          institute_name?: string | null
           is_active?: boolean | null
           mobile?: string | null
           owner_block?: string | null
@@ -139,6 +155,8 @@ export type Database = {
           owner_village?: string | null
           payment_utr?: string | null
           payment_verified?: boolean | null
+          pincode?: string | null
+          state?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -146,12 +164,19 @@ export type Database = {
         Update: {
           address?: string | null
           admin_id?: string | null
+          capacity?: number | null
           center_code?: string
           center_name?: string
+          center_type?: string | null
+          city?: string | null
           contact_person?: string | null
           created_at?: string
+          district?: string | null
           email?: string | null
+          established_year?: number | null
+          full_address?: string | null
           id?: string
+          institute_name?: string | null
           is_active?: boolean | null
           mobile?: string | null
           owner_block?: string | null
@@ -163,6 +188,8 @@ export type Database = {
           owner_village?: string | null
           payment_utr?: string | null
           payment_verified?: boolean | null
+          pincode?: string | null
+          state?: string | null
           status?: string
           updated_at?: string
           user_id?: string
