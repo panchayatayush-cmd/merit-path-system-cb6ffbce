@@ -17,7 +17,9 @@ export default function RegisterPage() {
   const [role, setRole] = useState<RegisterRole>('student');
   const [centerName, setCenterName] = useState('');
   const [adminCenterCode, setAdminCenterCode] = useState('');
-  const [referralCode, setReferralCode] = useState('');
+  // Student-specific fields
+  const [studentCenterCode, setStudentCenterCode] = useState('');
+  const [studentReferralCode, setStudentReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, refreshRole } = useAuth();
   const navigate = useNavigate();
@@ -35,6 +37,45 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
+      // --- Pre-signup validation for student codes ---
+      let validatedCenterCode: string | null = null;
+      let validatedReferredBy: string | null = null;
+
+      if (role === 'student') {
+        // Validate Center Code if provided
+        if (studentCenterCode.trim()) {
+          const code = studentCenterCode.trim().toUpperCase();
+          const { data: centerData } = await supabase
+            .from('centers')
+            .select('center_code')
+            .eq('center_code', code)
+            .maybeSingle();
+          if (!centerData) {
+            toast.error('Invalid Center Code. Please check and try again.');
+            setLoading(false);
+            return;
+          }
+          validatedCenterCode = code;
+        }
+
+        // Validate Student Referral Code if provided
+        if (studentReferralCode.trim()) {
+          const refCode = studentReferralCode.trim().toUpperCase();
+          const { data: referrerData } = await supabase
+            .from('profiles')
+            .select('user_id, referral_code')
+            .eq('referral_code', refCode)
+            .maybeSingle();
+          if (!referrerData) {
+            toast.error('Invalid Student Referral Code. Please check and try again.');
+            setLoading(false);
+            return;
+          }
+          validatedReferredBy = refCode;
+        }
+      }
+
+      // --- Sign up ---
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -42,10 +83,22 @@ export default function RegisterPage() {
       });
       if (signUpError) throw signUpError;
 
-      // With auto-confirm, session is returned immediately
       const session = data.session;
       if (!session?.user) throw new Error('Registration failed – no session. Please try again.');
       const userId = session.user.id;
+
+      // Prevent self-referral
+      if (validatedReferredBy) {
+        const { data: selfCheck } = await supabase
+          .from('profiles')
+          .select('referral_code')
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (selfCheck?.referral_code === validatedReferredBy) {
+          validatedReferredBy = null;
+          toast.warning('You cannot use your own referral code.');
+        }
+      }
 
       // Assign role
       const { error: roleError } = await supabase.from('user_roles').insert({
@@ -59,7 +112,6 @@ export default function RegisterPage() {
         const { data: codeData } = await supabase.rpc('generate_center_code');
         const centerCode = codeData ?? `CTR${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Look up the admin who owns the provided admin center code
         let adminId: string | null = null;
         if (adminCenterCode.trim()) {
           const { data: adminCenter } = await supabase
@@ -67,7 +119,6 @@ export default function RegisterPage() {
             .select('user_id')
             .eq('center_code', adminCenterCode.trim().toUpperCase())
             .maybeSingle();
-          // If the code belongs to an admin, store their user_id
           if (adminCenter) {
             adminId = adminCenter.user_id;
           }
@@ -90,11 +141,18 @@ export default function RegisterPage() {
         balance: 0,
       });
 
-      // If student with referral code, save it
-      if (role === 'student' && referralCode.trim()) {
+      // For students: generate referral code + store center_code & referred_by
+      if (role === 'student') {
+        const { data: newRefCode } = await supabase.rpc('generate_referral_code');
+        const generatedRefCode = newRefCode ?? `REF${Math.floor(100000 + Math.random() * 900000)}`;
+
         await supabase
           .from('profiles')
-          .update({ referred_by: referralCode.trim().toUpperCase() } as any)
+          .update({
+            referral_code: generatedRefCode,
+            center_code: validatedCenterCode,
+            referred_by: validatedReferredBy,
+          })
           .eq('user_id', userId);
       }
 
@@ -172,15 +230,27 @@ export default function RegisterPage() {
           )}
 
           {role === 'student' && (
-            <div>
-              <Label htmlFor="referralCode">Referral Code (Optional)</Label>
-              <Input
-                id="referralCode"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value)}
-                placeholder="Enter referral code if you have one"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Got a referral code from another student? Enter it here.</p>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="studentCenterCode">Center Code (Optional)</Label>
+                <Input
+                  id="studentCenterCode"
+                  value={studentCenterCode}
+                  onChange={(e) => setStudentCenterCode(e.target.value)}
+                  placeholder="Enter center code"
+                />
+                <p className="text-xs text-muted-foreground mt-1">अगर आप किसी Center से जुड़े हैं तो उनका Center Code डालें।</p>
+              </div>
+              <div>
+                <Label htmlFor="studentReferralCode">Student Referral Code (Optional)</Label>
+                <Input
+                  id="studentReferralCode"
+                  value={studentReferralCode}
+                  onChange={(e) => setStudentReferralCode(e.target.value)}
+                  placeholder="Enter student referral code"
+                />
+                <p className="text-xs text-muted-foreground mt-1">किसी Student का Referral Code डालें अगर आपके पास है।</p>
+              </div>
             </div>
           )}
 
