@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -11,24 +11,26 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles, Upload, Plus, Check, X, Loader2, FileText, Trash2, RefreshCw } from 'lucide-react';
+import { Sparkles, Plus, Check, X, Loader2, Trash2, RefreshCw, FileText } from 'lucide-react';
 
 interface SyllabusClass { id: string; class_name: string; class_number: number; }
-interface SyllabusPdf { id: string; class_id: string; pdf_file_path: string; extracted_text: string | null; file_name: string | null; uploaded_at: string; }
-interface AIQuestion { id: string; question_text: string; question_type: string; difficulty: string; options: any; correct_option: number; is_approved: boolean; class_id: string; created_at: string; }
+interface Subject { id: string; class_id: string; subject_name: string; }
+interface Lesson { id: string; class_id: string; subject_id: string; lesson_name: string; file_name: string | null; extracted_text: string | null; }
+interface AIQuestion { id: string; question_text: string; question_type: string; difficulty: string; options: any; correct_option: number; is_approved: boolean; class_id: string; lesson_id: string | null; subject_id: string; created_at: string; }
 
 export default function SuperAdminAIExamPage() {
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [classes, setClasses] = useState<SyllabusClass[]>([]);
-  const [syllabi, setSyllabi] = useState<SyllabusPdf[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [questions, setQuestions] = useState<AIQuestion[]>([]);
 
   const [selectedClass, setSelectedClass] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedLesson, setSelectedLesson] = useState('');
   const [numQuestions, setNumQuestions] = useState('60');
   const [difficulty, setDifficulty] = useState('medium');
   const [generating, setGenerating] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Manual question form
@@ -42,66 +44,45 @@ export default function SuperAdminAIExamPage() {
 
   const load = async () => {
     setLoading(true);
-    const [c, s, q] = await Promise.all([
+    const [c, s, l, q] = await Promise.all([
       supabase.from('syllabus_classes').select('*').order('class_number'),
-      supabase.from('syllabus_pdfs' as any).select('*').order('uploaded_at', { ascending: false }),
-      supabase.from('ai_generated_questions').select('*').order('created_at', { ascending: false }).limit(100),
+      supabase.from('syllabus_subjects').select('*').order('subject_name'),
+      supabase.from('syllabus_lessons' as any).select('*').order('created_at'),
+      supabase.from('ai_generated_questions').select('*').order('created_at', { ascending: false }).limit(500),
     ]);
     setClasses((c.data as any[]) ?? []);
-    setSyllabi((s.data as any[]) ?? []);
+    setSubjects((s.data as any[]) ?? []);
+    setLessons((l.data as any[]) ?? []);
     setQuestions((q.data as any[]) ?? []);
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
+  // Reset dependent selectors
+  useEffect(() => { setSelectedSubject(''); setSelectedLesson(''); }, [selectedClass]);
+  useEffect(() => { setSelectedLesson(''); }, [selectedSubject]);
+
   const getClassName = (id: string) => classes.find(c => c.id === id)?.class_name || 'Unknown';
-  const getClassSyllabus = (classId: string) => syllabi.find(s => s.class_id === classId);
+  const filteredSubjects = subjects.filter(s => s.class_id === selectedClass);
+  const filteredLessons = lessons.filter(l => l.class_id === selectedClass && l.subject_id === selectedSubject);
+  const currentLesson = lessons.find(l => l.id === selectedLesson);
 
-  // PDF Upload
-  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !selectedClass) {
-      toast({ title: 'Error', description: 'Select a class first', variant: 'destructive' });
-      return;
-    }
-    if (file.type !== 'application/pdf') {
-      toast({ title: 'Error', description: 'Only PDF files allowed', variant: 'destructive' });
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: 'Error', description: 'Max file size is 10MB', variant: 'destructive' });
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const filePath = `${selectedClass}/${Date.now()}_${safeName}`;
-      const { error: uploadErr } = await supabase.storage.from('syllabus-pdfs').upload(filePath, file);
-      if (uploadErr) throw uploadErr;
-
-      // Parse PDF with AI
-      const { data, error } = await supabase.functions.invoke('parse-syllabus-pdf', {
-        body: { class_id: selectedClass, file_path: filePath, file_name: file.name },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast({ title: 'Syllabus Uploaded!', description: `Text extracted: ${data.text_length} characters` });
-      load();
-    } catch (err: any) {
-      toast({ title: 'Upload Failed', description: err.message, variant: 'destructive' });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
+  const filteredQuestions = selectedLesson
+    ? questions.filter(q => (q as any).lesson_id === selectedLesson)
+    : selectedClass
+      ? questions.filter(q => q.class_id === selectedClass)
+      : questions;
+  const approvedCount = filteredQuestions.filter(q => q.is_approved).length;
 
   // AI Generate
   const generateQuestions = async () => {
-    if (!selectedClass) {
-      toast({ title: 'Error', description: 'Select a class first', variant: 'destructive' });
+    if (!selectedLesson || !currentLesson) {
+      toast({ title: 'Error', description: 'Select a lesson with uploaded PDF first', variant: 'destructive' });
+      return;
+    }
+    if (!currentLesson.extracted_text) {
+      toast({ title: 'Error', description: 'This lesson has no extracted PDF text. Please re-upload the syllabus PDF.', variant: 'destructive' });
       return;
     }
     setGenerating(true);
@@ -109,6 +90,8 @@ export default function SuperAdminAIExamPage() {
       const { data, error } = await supabase.functions.invoke('generate-ai-questions', {
         body: {
           class_id: selectedClass,
+          subject_id: selectedSubject,
+          lesson_id: selectedLesson,
           num_questions: parseInt(numQuestions),
           difficulty,
           question_type: 'mcq',
@@ -116,7 +99,7 @@ export default function SuperAdminAIExamPage() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast({ title: 'Questions Generated!', description: `${data.count} questions created from syllabus` });
+      toast({ title: 'Questions Generated!', description: `${data.count} questions created from lesson syllabus PDF` });
       load();
     } catch (e: any) {
       toast({ title: 'Generation Failed', description: e.message, variant: 'destructive' });
@@ -127,38 +110,28 @@ export default function SuperAdminAIExamPage() {
 
   // Manual Add
   const addManualQuestion = async () => {
-    if (!selectedClass || !manualQ || !manualA || !manualB || !manualC || !manualD) {
-      toast({ title: 'Error', description: 'Fill all fields', variant: 'destructive' });
+    if (!selectedLesson || !manualQ || !manualA || !manualB || !manualC || !manualD) {
+      toast({ title: 'Error', description: 'Select a lesson and fill all fields', variant: 'destructive' });
       return;
     }
     setAddingManual(true);
     try {
-      // Need a subject and topic for the question
-      let subjectId: string;
+      // Need a topic for the question - get or create one
       let topicId: string;
-
-      const { data: existingSub } = await supabase.from('syllabus_subjects').select('id').eq('class_id', selectedClass).limit(1).maybeSingle();
-      if (existingSub) {
-        subjectId = existingSub.id;
-      } else {
-        const { data: newSub, error } = await supabase.from('syllabus_subjects').insert({ class_id: selectedClass, subject_name: 'General' } as any).select('id').single();
-        if (error) throw error;
-        subjectId = newSub.id;
-      }
-
-      const { data: existingTopic } = await supabase.from('syllabus_topics').select('id').eq('class_id', selectedClass).eq('subject_id', subjectId).limit(1).maybeSingle();
+      const { data: existingTopic } = await supabase.from('syllabus_topics').select('id').eq('class_id', selectedClass).eq('subject_id', selectedSubject).limit(1).maybeSingle();
       if (existingTopic) {
         topicId = existingTopic.id;
       } else {
-        const { data: newTopic, error } = await supabase.from('syllabus_topics').insert({ class_id: selectedClass, subject_id: subjectId, topic_name: 'Manual', status: 'approved' } as any).select('id').single();
+        const { data: newTopic, error } = await supabase.from('syllabus_topics').insert({ class_id: selectedClass, subject_id: selectedSubject, topic_name: currentLesson?.lesson_name || 'Manual', status: 'approved' } as any).select('id').single();
         if (error) throw error;
         topicId = newTopic.id;
       }
 
       const { error } = await supabase.from('ai_generated_questions').insert({
         class_id: selectedClass,
-        subject_id: subjectId,
+        subject_id: selectedSubject,
         topic_id: topicId,
+        lesson_id: selectedLesson,
         question_text: manualQ,
         options: [manualA, manualB, manualC, manualD],
         correct_option: parseInt(manualCorrect),
@@ -190,17 +163,6 @@ export default function SuperAdminAIExamPage() {
     toast({ title: 'Question deleted' });
   };
 
-  const deleteSyllabus = async (syllabus: SyllabusPdf) => {
-    await supabase.storage.from('syllabus-pdfs').remove([syllabus.pdf_file_path]);
-    await supabase.from('syllabus_pdfs' as any).delete().eq('id', syllabus.id);
-    toast({ title: 'Syllabus deleted' });
-    load();
-  };
-
-  const filteredQuestions = selectedClass ? questions.filter(q => q.class_id === selectedClass) : questions;
-  const classQuestionCount = selectedClass ? filteredQuestions.length : 0;
-  const approvedCount = filteredQuestions.filter(q => q.is_approved).length;
-
   if (loading) return <DashboardLayout><div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></DashboardLayout>;
 
   return (
@@ -209,114 +171,86 @@ export default function SuperAdminAIExamPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <h1 className="text-base font-semibold text-foreground">AI Exam & Syllabus Management</h1>
+            <h1 className="text-base font-semibold text-foreground">AI Exam & Question Management</h1>
           </div>
           <Button variant="ghost" size="icon" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
         </div>
 
-        {/* Class Selector */}
+        {/* Class → Subject → Lesson Selector */}
         <Card>
           <CardContent className="pt-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-1 space-y-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Select Class</Label>
                 <Select value={selectedClass} onValueChange={setSelectedClass}>
                   <SelectTrigger><SelectValue placeholder="Choose a class" /></SelectTrigger>
                   <SelectContent>{classes.map(c => <SelectItem key={c.id} value={c.id}>{c.class_name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              {selectedClass && (
-                <div className="flex gap-4 pt-5">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Select Subject</Label>
+                <Select value={selectedSubject} onValueChange={setSelectedSubject} disabled={!selectedClass}>
+                  <SelectTrigger><SelectValue placeholder="Choose a subject" /></SelectTrigger>
+                  <SelectContent>{filteredSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.subject_name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Select Lesson</Label>
+                <Select value={selectedLesson} onValueChange={setSelectedLesson} disabled={!selectedSubject}>
+                  <SelectTrigger><SelectValue placeholder="Choose a lesson" /></SelectTrigger>
+                  <SelectContent>{filteredLessons.map(l => <SelectItem key={l.id} value={l.id}>{l.lesson_name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {selectedLesson && currentLesson && (
+              <div className="mt-4 p-3 border rounded-lg bg-muted/30 flex items-center gap-3">
+                <FileText className="h-5 w-5 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">{currentLesson.lesson_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    📄 {currentLesson.file_name || 'PDF'} • {currentLesson.extracted_text ? `${currentLesson.extracted_text.length} chars extracted` : '⚠️ No text extracted'}
+                  </p>
+                </div>
+                <div className="flex gap-3 shrink-0">
                   <div className="text-center">
-                    <p className="text-lg font-bold text-foreground">{classQuestionCount}</p>
+                    <p className="text-lg font-bold text-foreground">{filteredQuestions.length}</p>
                     <p className="text-xs text-muted-foreground">Questions</p>
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-bold text-primary">{approvedCount}</p>
                     <p className="text-xs text-muted-foreground">Approved</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-foreground">{getClassSyllabus(selectedClass) ? '✅' : '❌'}</p>
-                    <p className="text-xs text-muted-foreground">Syllabus</p>
-                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {filteredLessons.length === 0 && selectedSubject && (
+              <div className="mt-4 p-3 border rounded-lg bg-destructive/10 text-destructive text-sm">
+                ⚠️ No lessons found for this subject. Go to Syllabus Management to add lessons with PDF uploads first.
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {selectedClass && (
-          <Tabs defaultValue="syllabus" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="syllabus" className="text-xs">📄 Syllabus PDF</TabsTrigger>
-              <TabsTrigger value="ai-generate" className="text-xs">🤖 AI Generate</TabsTrigger>
-              <TabsTrigger value="manual" className="text-xs">✏️ Manual Add</TabsTrigger>
+        {selectedLesson && currentLesson && (
+          <Tabs defaultValue="ai-generate" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="ai-generate" className="text-xs">🤖 Generate with AI</TabsTrigger>
+              <TabsTrigger value="manual" className="text-xs">✏️ Add Manually</TabsTrigger>
               <TabsTrigger value="questions" className="text-xs">📋 Questions ({filteredQuestions.length})</TabsTrigger>
             </TabsList>
-
-            {/* Syllabus PDF Tab */}
-            <TabsContent value="syllabus">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Syllabus PDF - {getClassName(selectedClass)}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {(() => {
-                    const existing = getClassSyllabus(selectedClass);
-                    if (existing) {
-                      return (
-                        <div className="border rounded-lg p-4 bg-muted/30 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <FileText className="h-5 w-5 text-primary" />
-                              <div>
-                                <p className="text-sm font-medium text-foreground">{existing.file_name || 'syllabus.pdf'}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  Uploaded: {new Date(existing.uploaded_at).toLocaleDateString('en-IN')} •
-                                  {existing.extracted_text ? ` ${existing.extracted_text.length} chars extracted` : ' Processing...'}
-                                </p>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="icon" onClick={() => deleteSyllabus(existing)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                          {existing.extracted_text && (
-                            <div className="bg-background rounded p-3 max-h-40 overflow-y-auto">
-                              <p className="text-xs text-muted-foreground whitespace-pre-wrap">{existing.extracted_text.substring(0, 1000)}...</p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
-
-                  <div className="border-2 border-dashed rounded-lg p-8 text-center space-y-3">
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{getClassSyllabus(selectedClass) ? 'Replace Syllabus PDF' : 'Upload Syllabus PDF'}</p>
-                      <p className="text-xs text-muted-foreground">PDF format, max 10MB. AI will extract text for question generation.</p>
-                    </div>
-                    <input ref={fileInputRef} type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" />
-                    <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} variant="outline">
-                      {uploading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing PDF...</> : <><Upload className="h-4 w-4 mr-2" /> Select PDF</>}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             {/* AI Generate Tab */}
             <TabsContent value="ai-generate">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Generate Questions with AI</CardTitle>
+                  <CardTitle className="text-sm">Generate Questions from Syllabus PDF</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {!getClassSyllabus(selectedClass) && (
+                  {!currentLesson.extracted_text && (
                     <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-                      ⚠️ No syllabus PDF uploaded for {getClassName(selectedClass)}. Please upload a syllabus PDF first.
+                      ⚠️ No extracted text found for this lesson's PDF. Please re-upload the syllabus PDF.
                     </div>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -336,11 +270,11 @@ export default function SuperAdminAIExamPage() {
                       </Select>
                     </div>
                   </div>
-                  <Button onClick={generateQuestions} disabled={generating || !getClassSyllabus(selectedClass)} className="w-full" size="lg">
-                    {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generating from Syllabus...</> : <><Sparkles className="h-4 w-4 mr-2" /> Generate {numQuestions} Questions with AI</>}
+                  <Button onClick={generateQuestions} disabled={generating || !currentLesson.extracted_text} className="w-full" size="lg">
+                    {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generating from Syllabus PDF...</> : <><Sparkles className="h-4 w-4 mr-2" /> Generate {numQuestions} Questions from PDF</>}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    AI will generate questions strictly from the uploaded syllabus PDF content.
+                    AI will generate questions strictly from the uploaded syllabus PDF content of "{currentLesson.lesson_name}".
                   </p>
                 </CardContent>
               </Card>
@@ -358,22 +292,10 @@ export default function SuperAdminAIExamPage() {
                     <Textarea placeholder="Enter question text..." value={manualQ} onChange={e => setManualQ(e.target.value)} rows={2} />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Option A</Label>
-                      <Input placeholder="Option A" value={manualA} onChange={e => setManualA(e.target.value)} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Option B</Label>
-                      <Input placeholder="Option B" value={manualB} onChange={e => setManualB(e.target.value)} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Option C</Label>
-                      <Input placeholder="Option C" value={manualC} onChange={e => setManualC(e.target.value)} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Option D</Label>
-                      <Input placeholder="Option D" value={manualD} onChange={e => setManualD(e.target.value)} />
-                    </div>
+                    <div className="space-y-1.5"><Label className="text-xs">Option A</Label><Input placeholder="Option A" value={manualA} onChange={e => setManualA(e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label className="text-xs">Option B</Label><Input placeholder="Option B" value={manualB} onChange={e => setManualB(e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label className="text-xs">Option C</Label><Input placeholder="Option C" value={manualC} onChange={e => setManualC(e.target.value)} /></div>
+                    <div className="space-y-1.5"><Label className="text-xs">Option D</Label><Input placeholder="Option D" value={manualD} onChange={e => setManualD(e.target.value)} /></div>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Correct Answer</Label>
@@ -390,9 +312,6 @@ export default function SuperAdminAIExamPage() {
                   <Button onClick={addManualQuestion} disabled={addingManual} className="w-full">
                     {addingManual ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Adding...</> : <><Plus className="h-4 w-4 mr-2" /> Add Question</>}
                   </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Manually added questions are auto-approved. You can add up to 60 questions per exam.
-                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -402,7 +321,7 @@ export default function SuperAdminAIExamPage() {
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm">Questions for {getClassName(selectedClass)} ({filteredQuestions.length})</CardTitle>
+                    <CardTitle className="text-sm">Questions ({filteredQuestions.length})</CardTitle>
                     <div className="flex gap-2">
                       <Badge variant="default" className="text-xs">{approvedCount} Approved</Badge>
                       <Badge variant="secondary" className="text-xs">{filteredQuestions.length - approvedCount} Pending</Badge>
@@ -411,7 +330,7 @@ export default function SuperAdminAIExamPage() {
                 </CardHeader>
                 <CardContent>
                   {filteredQuestions.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">No questions for this class yet. Use AI Generate or Manual Add.</p>
+                    <p className="text-sm text-muted-foreground text-center py-8">No questions for this lesson yet.</p>
                   ) : (
                     <div className="overflow-x-auto">
                       <Table>
@@ -431,9 +350,7 @@ export default function SuperAdminAIExamPage() {
                             return (
                               <TableRow key={q.id}>
                                 <TableCell className="text-xs">{idx + 1}</TableCell>
-                                <TableCell className="text-xs max-w-[250px]">
-                                  <span className="line-clamp-2">{q.question_text}</span>
-                                </TableCell>
+                                <TableCell className="text-xs max-w-[250px]"><span className="line-clamp-2">{q.question_text}</span></TableCell>
                                 <TableCell className="text-xs max-w-[200px]">
                                   <div className="space-y-0.5">
                                     {opts.map((o: string, i: number) => (
@@ -443,11 +360,7 @@ export default function SuperAdminAIExamPage() {
                                     ))}
                                   </div>
                                 </TableCell>
-                                <TableCell>
-                                  <Badge variant="outline" className="text-xs">
-                                    {String.fromCharCode(65 + q.correct_option)}
-                                  </Badge>
-                                </TableCell>
+                                <TableCell><Badge variant="outline" className="text-xs">{String.fromCharCode(65 + q.correct_option)}</Badge></TableCell>
                                 <TableCell>
                                   <Badge variant={q.is_approved ? 'default' : 'secondary'} className="text-xs cursor-pointer" onClick={() => toggleApproval(q)}>
                                     {q.is_approved ? '✅ Approved' : '⏳ Pending'}
@@ -476,49 +389,19 @@ export default function SuperAdminAIExamPage() {
           </Tabs>
         )}
 
-        {/* All Classes Syllabus Overview */}
-        {!selectedClass && (
+        {/* Overview when no lesson selected */}
+        {!selectedLesson && (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Class-wise Syllabus Overview</CardTitle>
+              <CardTitle className="text-sm">How to Generate Questions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">Class</TableHead>
-                      <TableHead className="text-xs">Syllabus PDF</TableHead>
-                      <TableHead className="text-xs">Questions</TableHead>
-                      <TableHead className="text-xs">Approved</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {classes.map(cls => {
-                      const pdf = syllabi.find(s => s.class_id === cls.id);
-                      const clsQ = questions.filter(q => q.class_id === cls.id);
-                      const clsApproved = clsQ.filter(q => q.is_approved);
-                      return (
-                        <TableRow key={cls.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedClass(cls.id)}>
-                          <TableCell className="text-xs font-medium">{cls.class_name}</TableCell>
-                          <TableCell>
-                            {pdf ? (
-                              <Badge variant="default" className="text-xs">✅ {pdf.file_name}</Badge>
-                            ) : (
-                              <Badge variant="secondary" className="text-xs">❌ Not uploaded</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-xs">{clsQ.length}</TableCell>
-                          <TableCell className="text-xs">{clsApproved.length}</TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <p>1️⃣ Go to <strong className="text-foreground">Syllabus Management</strong> → Add Classes, Subjects, and Lessons with PDF uploads</p>
+                <p>2️⃣ Come back here → Select <strong className="text-foreground">Class → Subject → Lesson</strong></p>
+                <p>3️⃣ Use <strong className="text-foreground">Generate with AI</strong> or <strong className="text-foreground">Add Manually</strong></p>
+                <p className="text-xs">⚠️ AI questions are generated strictly from the uploaded syllabus PDF content. No PDF = No AI generation.</p>
               </div>
-              {classes.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-8">No classes created yet. Go to Syllabus Management to add classes.</p>
-              )}
             </CardContent>
           </Card>
         )}
