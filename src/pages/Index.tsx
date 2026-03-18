@@ -316,6 +316,39 @@ export default function Index() {
       </section>
 
 
+      {/* Leaderboard */}
+      {leaderboard.length > 0 && (
+        <section className="border-t border-border">
+          <div className="max-w-6xl mx-auto px-4 py-16 text-center">
+            <h3 className="text-2xl font-bold text-foreground tracking-tight mb-2 flex items-center justify-center gap-2">
+              <Trophy className="h-6 w-6 text-primary" /> Top 20 Student Leaderboard
+            </h3>
+            <p className="text-sm text-muted-foreground mb-8">Merit-based rankings of our top performing students</p>
+            <div className="max-w-2xl mx-auto card-shadow rounded-lg bg-card overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-secondary/50">
+                    <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground text-left">Rank</th>
+                    <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground text-left">Name</th>
+                    <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground text-left">Class</th>
+                    <th className="px-4 py-3 text-xs font-medium uppercase text-muted-foreground text-right">Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboard.map((e, i) => (
+                    <tr key={i} className="border-b border-border last:border-0">
+                      <td className="px-4 py-3 font-bold text-primary">#{e.rank}</td>
+                      <td className="px-4 py-3 font-medium text-foreground">{e.student_name}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{e.class ?? '—'}</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-foreground">{e.score}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FAQ */}
       <section className="border-t border-border">
