@@ -611,6 +611,7 @@ export type Database = {
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
           state: string
+          status: string
           terms_accepted: boolean
           village: string
           work_experience: string | null
@@ -635,6 +636,7 @@ export type Database = {
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           state: string
+          status?: string
           terms_accepted?: boolean
           village: string
           work_experience?: string | null
@@ -659,6 +661,7 @@ export type Database = {
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           state?: string
+          status?: string
           terms_accepted?: boolean
           village?: string
           work_experience?: string | null
