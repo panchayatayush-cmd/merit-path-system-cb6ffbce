@@ -90,6 +90,8 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/verify/:certId" element={<CertificateVerifyPage />} />
             <Route path="/verify" element={<CertificateVerifyPage />} />
+            <Route path="/apply" element={<JobApplicationPage />} />
+            <Route path="/result" element={<PublicResultPage />} />
 
             {/* Student */}
             <Route path="/student" element={<RoleGuard allowedRoles={['student']}><StudentDashboard /></RoleGuard>} />
