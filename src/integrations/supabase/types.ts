@@ -590,6 +590,117 @@ export type Database = {
         }
         Relationships: []
       }
+      job_applications: {
+        Row: {
+          alternate_number: string | null
+          amount: number
+          block: string
+          contact_number: string
+          created_at: string
+          date_of_birth: string
+          designation: string
+          district: string
+          email: string
+          father_name: string
+          full_address: string
+          full_name: string
+          id: string
+          payment_status: string
+          photo_url: string | null
+          pin_code: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          state: string
+          terms_accepted: boolean
+          village: string
+          work_experience: string | null
+        }
+        Insert: {
+          alternate_number?: string | null
+          amount?: number
+          block: string
+          contact_number: string
+          created_at?: string
+          date_of_birth: string
+          designation: string
+          district: string
+          email: string
+          father_name: string
+          full_address: string
+          full_name: string
+          id?: string
+          payment_status?: string
+          photo_url?: string | null
+          pin_code: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          state: string
+          terms_accepted?: boolean
+          village: string
+          work_experience?: string | null
+        }
+        Update: {
+          alternate_number?: string | null
+          amount?: number
+          block?: string
+          contact_number?: string
+          created_at?: string
+          date_of_birth?: string
+          designation?: string
+          district?: string
+          email?: string
+          father_name?: string
+          full_address?: string
+          full_name?: string
+          id?: string
+          payment_status?: string
+          photo_url?: string | null
+          pin_code?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          state?: string
+          terms_accepted?: boolean
+          village?: string
+          work_experience?: string | null
+        }
+        Relationships: []
+      }
+      leaderboard_entries: {
+        Row: {
+          class: number | null
+          created_at: string
+          district: string | null
+          id: string
+          rank: number
+          score: number
+          state: string | null
+          student_name: string
+          updated_at: string
+        }
+        Insert: {
+          class?: number | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          rank: number
+          score?: number
+          state?: string | null
+          student_name: string
+          updated_at?: string
+        }
+        Update: {
+          class?: number | null
+          created_at?: string
+          district?: string | null
+          id?: string
+          rank?: number
+          score?: number
+          state?: string | null
+          student_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_templates: {
         Row: {
           created_at: string

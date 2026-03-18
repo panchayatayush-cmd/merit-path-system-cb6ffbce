@@ -60,7 +60,13 @@ import Index from "./pages/Index";
 import AboutUsPage from "./pages/AboutUsPage";
 import PhotoGalleryPage from "./pages/PhotoGalleryPage";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
+import JobApplicationPage from "./pages/JobApplicationPage";
+import PublicResultPage from "./pages/PublicResultPage";
 import NotFound from "./pages/NotFound";
+
+// Additional Super Admin pages
+import SuperAdminJobApplicationsPage from "./pages/superadmin/SuperAdminJobApplicationsPage";
+import SuperAdminLeaderboardPage from "./pages/superadmin/SuperAdminLeaderboardPage";
 
 
 const queryClient = new QueryClient();
@@ -84,6 +90,8 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/verify/:certId" element={<CertificateVerifyPage />} />
             <Route path="/verify" element={<CertificateVerifyPage />} />
+            <Route path="/apply" element={<JobApplicationPage />} />
+            <Route path="/result" element={<PublicResultPage />} />
 
             {/* Student */}
             <Route path="/student" element={<RoleGuard allowedRoles={['student']}><StudentDashboard /></RoleGuard>} />
@@ -126,6 +134,8 @@ const App = () => (
             <Route path="/super-admin/students" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminStudentsPage /></RoleGuard>} />
             <Route path="/super-admin/fund" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminFundPage /></RoleGuard>} />
             <Route path="/super-admin/settings" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminSettingsPage /></RoleGuard>} />
+            <Route path="/super-admin/job-applications" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminJobApplicationsPage /></RoleGuard>} />
+            <Route path="/super-admin/leaderboard" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminLeaderboardPage /></RoleGuard>} />
             <Route path="/super-admin/*" element={<RoleGuard allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleGuard>} />
 
             <Route path="*" element={<NotFound />} />

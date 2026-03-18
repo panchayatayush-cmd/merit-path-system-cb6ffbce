@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
+import { Users } from 'lucide-react';
 
 export default function CenterStudentsPage() {
   const { user } = useAuth();
-  const [students, setStudents] = useState<any[]>([]);
+  const [stats, setStats] = useState({ total: 0, paid: 0, unpaid: 0 });
 
   useEffect(() => {
     if (!user) return;
@@ -17,12 +18,26 @@ export default function CenterStudentsPage() {
         .maybeSingle();
 
       if (center?.center_code) {
-        const { data } = await supabase
+        const { data: students } = await supabase
           .from('profiles')
-          .select('full_name, class, created_at')
-          .eq('center_code', center.center_code)
-          .order('created_at', { ascending: false });
-        setStudents(data ?? []);
+          .select('user_id')
+          .eq('center_code', center.center_code);
+
+        const total = students?.length ?? 0;
+
+        if (total > 0) {
+          const userIds = (students ?? []).map(s => s.user_id);
+          const { data: payments } = await supabase
+            .from('payment_orders')
+            .select('user_id')
+            .in('user_id', userIds)
+            .eq('status', 'verified')
+            .eq('order_type', 'exam_fee');
+          const paid = new Set((payments ?? []).map(p => p.user_id)).size;
+          setStats({ total, paid, unpaid: total - paid });
+        } else {
+          setStats({ total: 0, paid: 0, unpaid: 0 });
+        }
       }
     };
     load();
@@ -31,37 +46,29 @@ export default function CenterStudentsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <h1 className="text-base font-semibold text-foreground">Students</h1>
+        <h1 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Users className="h-5 w-5" /> Students
+        </h1>
 
-        <div className="card-shadow rounded-lg bg-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Class</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="text-center py-8 text-muted-foreground">No students yet</td>
-                  </tr>
-                ) : (
-                  students.map((s, i) => (
-                    <tr key={i} className="border-b border-border last:border-0">
-                      <td className="px-4 py-3 text-foreground">{s.full_name ?? '—'}</td>
-                      <td className="px-4 py-3 font-mono">{s.class ?? '—'}</td>
-                      <td className="px-4 py-3 text-xs font-mono text-muted-foreground">
-                        {new Date(s.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="card-shadow rounded-lg bg-card p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Total Students</p>
+            <p className="text-2xl font-bold tabular-nums text-foreground">{stats.total}</p>
           </div>
+          <div className="card-shadow rounded-lg bg-card p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Paid</p>
+            <p className="text-2xl font-bold tabular-nums text-primary">{stats.paid}</p>
+          </div>
+          <div className="card-shadow rounded-lg bg-card p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Unpaid</p>
+            <p className="text-2xl font-bold tabular-nums text-destructive">{stats.unpaid}</p>
+          </div>
+        </div>
+
+        <div className="card-shadow rounded-lg bg-card p-5">
+          <p className="text-xs text-muted-foreground">
+            For student privacy, only aggregate counts are shown. Contact Super Admin for detailed student data.
+          </p>
         </div>
       </div>
     </DashboardLayout>
