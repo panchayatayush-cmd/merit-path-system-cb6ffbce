@@ -60,7 +60,13 @@ import Index from "./pages/Index";
 import AboutUsPage from "./pages/AboutUsPage";
 import PhotoGalleryPage from "./pages/PhotoGalleryPage";
 import CertificateVerifyPage from "./pages/CertificateVerifyPage";
+import JobApplicationPage from "./pages/JobApplicationPage";
+import PublicResultPage from "./pages/PublicResultPage";
 import NotFound from "./pages/NotFound";
+
+// Additional Super Admin pages
+import SuperAdminJobApplicationsPage from "./pages/superadmin/SuperAdminJobApplicationsPage";
+import SuperAdminLeaderboardPage from "./pages/superadmin/SuperAdminLeaderboardPage";
 
 
 const queryClient = new QueryClient();
