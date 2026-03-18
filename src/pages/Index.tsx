@@ -143,9 +143,14 @@ export default function Index() {
                   Students Register Now <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/auth/register">
+              <Link to="/apply">
                 <Button size="lg" variant="secondary" className="gap-2">
-                  छात्र अभी रजिस्टर करें <ChevronRight className="h-4 w-4" />
+                  <Briefcase className="h-4 w-4" /> Apply for Position
+                </Button>
+              </Link>
+              <Link to="/result">
+                <Button size="lg" variant="outline" className="gap-2">
+                  <Search className="h-4 w-4" /> Check Result
                 </Button>
               </Link>
               <Link to="/verify">
