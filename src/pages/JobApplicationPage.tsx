@@ -284,10 +284,11 @@ export default function JobApplicationPage() {
         <section className="card-shadow rounded-lg bg-card p-6 space-y-4">
           <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">Terms & Conditions</h2>
           <div className="space-y-2 text-xs text-muted-foreground">
-            <p>• ₹250 is a non-refundable charity/application fee.</p>
+            <p>• Application fee is non-refundable.</p>
             <p>• Selection is not guaranteed by submitting this application.</p>
-            <p>• All disputes are subject to Varanasi jurisdiction.</p>
-            <p>• Salary and target conditions as per organization policy.</p>
+            <p>• All disputes shall be subject to the jurisdiction of Varanasi, Uttar Pradesh.</p>
+            <p>• Salary, targets, and working conditions will be defined as per organization policy.</p>
+            <p>• By proceeding, you agree to all the terms and conditions mentioned above.</p>
           </div>
           <div className="flex items-start gap-2">
             <Checkbox
@@ -296,7 +297,7 @@ export default function JobApplicationPage() {
               onCheckedChange={(v) => setTermsAccepted(v === true)}
             />
             <Label htmlFor="terms" className="text-xs text-foreground cursor-pointer">
-              I accept all terms and conditions mentioned above. I understand that ₹250 is non-refundable.
+              I accept all terms and conditions mentioned above. I understand that job fee is non-refundable.
             </Label>
           </div>
         </section>
