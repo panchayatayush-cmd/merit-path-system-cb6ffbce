@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from '@/components/LanguageToggle';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import {
   BookOpen, Shield, Award, Users, Trophy, Gift, TrendingUp, Star,
   ChevronRight, Mail, Phone, MapPin, Clock, MessageSquare, Menu, X,
+  Briefcase, Search,
 } from 'lucide-react';
 import gphdmLogo from '@/assets/gphdm-logo.jpg';
 
