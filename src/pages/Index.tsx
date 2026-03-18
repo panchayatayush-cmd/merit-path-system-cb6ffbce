@@ -37,6 +37,18 @@ export default function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, role } = useAuth();
   const { t } = useLanguage();
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('leaderboard_entries')
+      .select('student_name, score, rank, class')
+      .order('rank', { ascending: true })
+      .limit(20)
+      .then(({ data }) => setLeaderboard(data ?? []));
+  }, []);
+  const { user, role } = useAuth();
+  const { t } = useLanguage();
 
   const dashboardMap: Record<string, string> = {
     student: '/student',
