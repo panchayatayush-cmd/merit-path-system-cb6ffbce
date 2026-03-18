@@ -18,9 +18,10 @@ declare global {
 }
 
 const designations = [
-  'District Manager (Media Prabhari)',
-  'Panchayat Sakhi (Kosha Adhyaksh)',
-  'Exam Center Head',
+  'General Manager / Media Prabhari (GMM)',
+  'District Manager / Media Prabhari (DMM)',
+  'Panchayat Sakhi / Kosha Adhyaksh (PSK)',
+  'Exam Center Head (ECH)',
 ];
 
 export default function JobApplicationPage() {
