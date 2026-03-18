@@ -80,6 +80,8 @@ const superAdminNav: NavItem[] = [
   { label: 'Withdrawals', href: '/super-admin/withdrawals', icon: <ArrowDownToLine className="h-4 w-4" /> },
   { label: 'Gallery', href: '/super-admin/gallery', icon: <FileText className="h-4 w-4" /> },
   { label: 'Fund', href: '/super-admin/fund', icon: <BarChart3 className="h-4 w-4" /> },
+  { label: 'Job Applications', href: '/super-admin/job-applications', icon: <Briefcase className="h-4 w-4" /> },
+  { label: 'Leaderboard', href: '/super-admin/leaderboard', icon: <Trophy className="h-4 w-4" /> },
   { label: 'Settings', href: '/super-admin/settings', icon: <Settings className="h-4 w-4" /> },
 ];
 
