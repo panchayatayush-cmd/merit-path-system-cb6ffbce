@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Download, Eye, Briefcase, Share2, FileSpreadsheet, Calendar } from 'lucide-react';
+import { Search, Download, Eye, Briefcase, Share2, FileSpreadsheet, Calendar, CheckCircle, Clock } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { toast } from 'sonner';
 
@@ -31,28 +31,36 @@ interface JobApp {
   razorpay_payment_id: string | null;
   amount: number;
   created_at: string;
+  status: string;
 }
+
+const DESIGNATIONS = [
+  'General Manager / Media Prabhari (GMM)',
+  'District Manager / Media Prabhari (DMM)',
+  'Panchayat Sakhi / Kosha Adhyaksh (PSK)',
+  'Exam Center Head (ECH)',
+];
 
 export default function SuperAdminJobApplicationsPage() {
   const [apps, setApps] = useState<JobApp[]>([]);
   const [search, setSearch] = useState('');
   const [filterDesignation, setFilterDesignation] = useState('all');
   const [filterPayment, setFilterPayment] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [filterDate, setFilterDate] = useState('');
   const [selected, setSelected] = useState<JobApp | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase
-        .from('job_applications')
-        .select('*')
-        .order('created_at', { ascending: false });
-      setApps((data as any[]) ?? []);
-      setLoading(false);
-    };
-    load();
-  }, []);
+  const load = async () => {
+    const { data } = await supabase
+      .from('job_applications')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setApps((data as any[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
 
   const filtered = apps.filter(a => {
     const matchSearch = !search.trim() ||
@@ -61,9 +69,24 @@ export default function SuperAdminJobApplicationsPage() {
       a.contact_number.includes(search);
     const matchDesignation = filterDesignation === 'all' || a.designation === filterDesignation;
     const matchPayment = filterPayment === 'all' || a.payment_status === filterPayment;
+    const matchStatus = filterStatus === 'all' || a.status === filterStatus;
     const matchDate = !filterDate || a.created_at.startsWith(filterDate);
-    return matchSearch && matchDesignation && matchPayment && matchDate;
+    return matchSearch && matchDesignation && matchPayment && matchStatus && matchDate;
   });
+
+  const updateStatus = async (app: JobApp, newStatus: string) => {
+    const { error } = await supabase
+      .from('job_applications')
+      .update({ status: newStatus } as any)
+      .eq('id', app.id);
+    if (error) {
+      toast.error('Failed to update status');
+      return;
+    }
+    setApps(prev => prev.map(a => a.id === app.id ? { ...a, status: newStatus } : a));
+    if (selected?.id === app.id) setSelected({ ...selected, status: newStatus });
+    toast.success(`Status updated to ${newStatus}`);
+  };
 
   const downloadPDF = (app: JobApp) => {
     const doc = new jsPDF();
@@ -85,6 +108,7 @@ export default function SuperAdminJobApplicationsPage() {
     addLine('Email', app.email);
     addLine('DOB', app.date_of_birth);
     addLine('Designation', app.designation);
+    addLine('Status', app.status);
     y += 5;
     doc.setFont('helvetica', 'bold');
     doc.text('Address:', 20, y); y += 8;
@@ -104,22 +128,18 @@ export default function SuperAdminJobApplicationsPage() {
   };
 
   const shareWhatsApp = (app: JobApp) => {
-    const text = `📋 *Job Application Details*\n\n👤 Name: ${app.full_name}\n📞 Mobile: ${app.contact_number}\n💼 Designation: ${app.designation}\n📍 Location: ${app.district}, ${app.state}\n📧 Email: ${app.email}\n💰 Payment: ${app.payment_status === 'paid' ? '✅ Paid' : '❌ Unpaid'}\n📅 Applied: ${new Date(app.created_at).toLocaleDateString()}`;
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    const text = `📋 *Job Application Details*\n\n👤 Name: ${app.full_name}\n📞 Mobile: ${app.contact_number}\n💼 Designation: ${app.designation}\n📍 Location: ${app.district}, ${app.state}\n📊 Status: ${app.status === 'approved' ? '✅ Approved' : '⏳ Pending'}\n💰 Payment: ${app.payment_status === 'paid' ? '✅ Paid' : '❌ Unpaid'}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const exportCSV = () => {
-    if (filtered.length === 0) {
-      toast.error('No applications to export');
-      return;
-    }
-    const headers = ['Full Name', 'Father Name', 'Contact', 'Alternate', 'Email', 'DOB', 'Designation', 'State', 'District', 'Block', 'Village', 'Full Address', 'Pin Code', 'Work Experience', 'Payment Status', 'Payment ID', 'Amount', 'Applied Date'];
+    if (filtered.length === 0) { toast.error('No applications to export'); return; }
+    const headers = ['Full Name', 'Father Name', 'Contact', 'Alternate', 'Email', 'DOB', 'Designation', 'State', 'District', 'Block', 'Village', 'Full Address', 'Pin Code', 'Work Experience', 'Payment Status', 'Payment ID', 'Amount', 'Status', 'Applied Date'];
     const rows = filtered.map(a => [
       a.full_name, a.father_name, a.contact_number, a.alternate_number || '', a.email,
       a.date_of_birth, a.designation, a.state, a.district, a.block, a.village,
       a.full_address, a.pin_code, a.work_experience || '', a.payment_status,
-      a.razorpay_payment_id || '', String(a.amount), new Date(a.created_at).toLocaleDateString()
+      a.razorpay_payment_id || '', String(a.amount), a.status, new Date(a.created_at).toLocaleDateString()
     ]);
     const csvContent = [headers, ...rows].map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -131,7 +151,10 @@ export default function SuperAdminJobApplicationsPage() {
   };
 
   const paidCount = filtered.filter(a => a.payment_status === 'paid').length;
-  const unpaidCount = filtered.length - paidCount;
+  const approvedCount = filtered.filter(a => a.status === 'approved').length;
+  const pendingCount = filtered.filter(a => a.status !== 'approved').length;
+
+  const shortAddress = (a: JobApp) => [a.village, a.block, a.district, a.state].filter(Boolean).join(', ');
 
   return (
     <DashboardLayout>
@@ -147,7 +170,7 @@ export default function SuperAdminJobApplicationsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="rounded-lg bg-card border border-border p-3 text-center">
             <p className="text-2xl font-bold text-foreground">{filtered.length}</p>
             <p className="text-xs text-muted-foreground">Total</p>
@@ -157,8 +180,12 @@ export default function SuperAdminJobApplicationsPage() {
             <p className="text-xs text-muted-foreground">Paid</p>
           </div>
           <div className="rounded-lg bg-card border border-border p-3 text-center">
-            <p className="text-2xl font-bold text-destructive">{unpaidCount}</p>
-            <p className="text-xs text-muted-foreground">Unpaid</p>
+            <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
+            <p className="text-xs text-muted-foreground">Pending</p>
+          </div>
+          <div className="rounded-lg bg-card border border-border p-3 text-center">
+            <p className="text-2xl font-bold text-primary">{approvedCount}</p>
+            <p className="text-xs text-muted-foreground">Approved</p>
           </div>
         </div>
 
@@ -172,17 +199,23 @@ export default function SuperAdminJobApplicationsPage() {
             <SelectTrigger className="w-48"><SelectValue placeholder="Designation" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Designations</SelectItem>
-              <SelectItem value="District Manager (Media Prabhari)">District Manager</SelectItem>
-              <SelectItem value="Panchayat Sakhi (Kosha Adhyaksh)">Panchayat Sakhi</SelectItem>
-              <SelectItem value="Exam Center Head">Exam Center Head</SelectItem>
+              {DESIGNATIONS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filterPayment} onValueChange={setFilterPayment}>
-            <SelectTrigger className="w-36"><SelectValue placeholder="Payment" /></SelectTrigger>
+            <SelectTrigger className="w-32"><SelectValue placeholder="Payment" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="all">All Payment</SelectItem>
               <SelectItem value="paid">Paid</SelectItem>
               <SelectItem value="pending">Unpaid</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-36"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
             </SelectContent>
           </Select>
           <div className="relative">
@@ -200,35 +233,65 @@ export default function SuperAdminJobApplicationsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">#</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Full Name</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Designation</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Mobile</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Reg. Date</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">#</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Applicant</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Designation</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Mobile</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">No applications found</td></tr>
+                    <tr><td colSpan={8} className="text-center py-8 text-muted-foreground">No applications found</td></tr>
                   ) : filtered.map((a, i) => (
                     <tr key={a.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
-                      <td className="px-4 py-3 font-medium text-foreground">{a.full_name}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{a.designation}</td>
-                      <td className="px-4 py-3 font-mono text-xs">{a.contact_number}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3 text-muted-foreground">{i + 1}</td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          {a.photo_url ? (
+                            <img src={a.photo_url} alt="" className="w-8 h-8 rounded-full object-cover border border-border flex-shrink-0" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground flex-shrink-0">
+                              {a.full_name.charAt(0)}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{a.full_name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{shortAddress(a)}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-muted-foreground max-w-[140px] truncate">{a.designation}</td>
+                      <td className="px-3 py-3 font-mono text-xs">{a.contact_number}</td>
+                      <td className="px-3 py-3">
                         <Badge className={a.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-red-100 text-red-700 border-red-200'}>
                           {a.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3 text-xs text-muted-foreground whitespace-nowrap">{new Date(a.created_at).toLocaleDateString()}</td>
+                      <td className="px-3 py-3">
+                        <Select value={a.status} onValueChange={v => updateStatus(a, v)}>
+                          <SelectTrigger className="h-7 w-28 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">
+                              <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-amber-500" /> Pending</span>
+                            </SelectItem>
+                            <SelectItem value="approved">
+                              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-emerald-500" /> Approved</span>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="px-3 py-3">
                         <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" onClick={() => setSelected(a)} title="View Details"><Eye className="h-4 w-4" /></Button>
-                          <Button size="sm" variant="ghost" onClick={() => downloadPDF(a)} title="Download PDF"><Download className="h-4 w-4" /></Button>
-                          <Button size="sm" variant="ghost" onClick={() => shareWhatsApp(a)} title="Share on WhatsApp"><Share2 className="h-4 w-4 text-green-600" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => setSelected(a)} title="View"><Eye className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => downloadPDF(a)} title="PDF"><Download className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => shareWhatsApp(a)} title="WhatsApp"><Share2 className="h-4 w-4 text-green-600" /></Button>
                         </div>
                       </td>
                     </tr>
@@ -249,14 +312,12 @@ export default function SuperAdminJobApplicationsPage() {
             </DialogHeader>
             {selected && (
               <div className="space-y-4 text-sm">
-                {/* Photo */}
                 {selected.photo_url && (
                   <div className="flex justify-center">
                     <img src={selected.photo_url} alt={selected.full_name} className="w-24 h-24 rounded-full object-cover border-2 border-border" />
                   </div>
                 )}
 
-                {/* Personal Details */}
                 <div>
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Personal Details</h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -269,7 +330,6 @@ export default function SuperAdminJobApplicationsPage() {
                   </div>
                 </div>
 
-                {/* Address */}
                 <div className="border-t border-border pt-3">
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Full Address</h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -284,7 +344,6 @@ export default function SuperAdminJobApplicationsPage() {
                   </div>
                 </div>
 
-                {/* Additional Details */}
                 <div className="border-t border-border pt-3">
                   <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Additional Details</h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -293,12 +352,11 @@ export default function SuperAdminJobApplicationsPage() {
                   </div>
                 </div>
 
-                {/* Payment */}
                 <div className="border-t border-border pt-3">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Payment Status</h3>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Payment & Status</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <span className="text-muted-foreground text-xs">Status</span>
+                      <span className="text-muted-foreground text-xs">Payment</span>
                       <p>
                         <Badge className={selected.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-red-100 text-red-700 border-red-200'}>
                           {selected.payment_status === 'paid' ? '✅ Paid' : '❌ Unpaid'}
@@ -308,10 +366,23 @@ export default function SuperAdminJobApplicationsPage() {
                     <DetailItem label="Amount" value={`₹${selected.amount}`} />
                     <DetailItem label="Payment ID" value={selected.razorpay_payment_id || '—'} />
                     <DetailItem label="Applied On" value={new Date(selected.created_at).toLocaleDateString()} />
+                    <div>
+                      <span className="text-muted-foreground text-xs">Application Status</span>
+                      <div className="mt-1">
+                        <Select value={selected.status} onValueChange={v => updateStatus(selected, v)}>
+                          <SelectTrigger className="h-8 w-32 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending"><span className="flex items-center gap-1"><Clock className="h-3 w-3 text-amber-500" /> Pending</span></SelectItem>
+                            <SelectItem value="approved"><span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-emerald-500" /> Approved</span></SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-2 pt-2">
                   <Button onClick={() => downloadPDF(selected)} className="flex-1 gap-2" size="sm">
                     <Download className="h-4 w-4" /> Download PDF
