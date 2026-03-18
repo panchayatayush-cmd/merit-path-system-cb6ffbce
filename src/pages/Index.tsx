@@ -47,8 +47,6 @@ export default function Index() {
       .limit(20)
       .then(({ data }) => setLeaderboard(data ?? []));
   }, []);
-  const { user, role } = useAuth();
-  const { t } = useLanguage();
 
   const dashboardMap: Record<string, string> = {
     student: '/student',
