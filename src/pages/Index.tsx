@@ -142,8 +142,8 @@ export default function Index() {
                 </Button>
               </Link>
               <Link to="/apply">
-                <Button size="lg" variant="secondary" className="gap-2">
-                  <Briefcase className="h-4 w-4" /> Apply for Position
+                <Button size="lg" className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/80 font-bold rounded-lg text-base px-8">
+                  <Briefcase className="h-5 w-5" /> Apply for Job
                 </Button>
               </Link>
               <Link to="/result">
