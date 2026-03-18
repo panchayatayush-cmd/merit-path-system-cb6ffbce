@@ -26,6 +26,8 @@ import {
   MessageCircle,
   Plus,
   CheckSquare,
+  Briefcase,
+  Trophy,
 } from 'lucide-react';
 
 interface NavItem {
